@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import type { Loan } from "./types";
-import { buildLoan, seedLoans, simulateYield } from "./mock";
+import { buildLoan, continueBorrowing, seedLoans, simulateYield, withdrawAfterRepayment } from "./mock";
 
 type LoanContextValue = {
   loans: Loan[];
@@ -8,12 +8,14 @@ type LoanContextValue = {
   createLoan: (amount: number, collateral: number, borrower: string) => Loan;
   fundLoan: (id: string) => void;
   accrueYield: (days?: number) => void;
+  continueActiveLoan: () => void;
+  withdrawActiveLoan: () => void;
   setActiveLoanId: (id: string) => void;
 };
 
 const LoanContext = createContext<LoanContextValue | null>(null);
-const storageKey = "solana-defi-vault-loans-v4";
-const activeKey = "solana-defi-vault-active-loan-v4";
+const storageKey = "solana-defi-vault-loans-v5";
+const activeKey = "solana-defi-vault-active-loan-v5";
 
 export function LoanProvider({ children }: { children: ReactNode }) {
   const [loans, setLoans] = useState<Loan[]>(seedLoans);
@@ -57,6 +59,18 @@ export function LoanProvider({ children }: { children: ReactNode }) {
       if (!activeLoan) return;
       setLoans((current) =>
         current.map((loan) => (loan.id === activeLoan.id ? simulateYield(loan, days) : loan))
+      );
+    },
+    continueActiveLoan() {
+      if (!activeLoan) return;
+      setLoans((current) =>
+        current.map((loan) => (loan.id === activeLoan.id ? continueBorrowing(loan) : loan))
+      );
+    },
+    withdrawActiveLoan() {
+      if (!activeLoan) return;
+      setLoans((current) =>
+        current.map((loan) => (loan.id === activeLoan.id ? withdrawAfterRepayment(loan) : loan))
       );
     },
     setActiveLoanId(id) {

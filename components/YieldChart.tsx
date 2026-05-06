@@ -25,6 +25,8 @@ const fallbackLoan: Loan = {
     lenderVisibleReason: "AI risk assessment: medium risk."
   },
   expectedYield: "15% APR",
+  interestDue: 80,
+  repaymentTarget: 580,
   currentYield: 2,
   currentCollateral: 800,
   lastPnl: 2,

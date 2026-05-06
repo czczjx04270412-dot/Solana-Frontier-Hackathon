@@ -8,10 +8,28 @@ function buildNodes(loan: Loan | null) {
 
   if (!loan || loan.lastEvent === "none") {
     return [
-      { label: "Initial Vault", note: "Loan + collateral enter controlled vault" },
-      { label: "Strategy", note: "Click simulation to run 1 day P/L" },
+      { label: "Low Risk Borrower", note: "180%+ collateral, staking-like strategy, low volatility" },
+      { label: "Shared Vault", note: "Lender principal + borrower collateral enter controlled account" },
       { label: "Risk Guard", note: "Loss first hits borrower collateral" },
-      { label: "Repay Split", note: "Profit splits 50 / 30 / 20" }
+      { label: "Repay Target", note: "Principal + interest must be fully repaid" }
+    ];
+  }
+
+  if (loan.lastEvent === "repaid") {
+    return [
+      { label: "Fully Repaid", note: "Principal + interest paid to lender" },
+      { label: "Control Released", note: "Lender no longer controls the shared vault account" },
+      { label: "Borrower Choice", note: "Continue borrowing or stop the loan" },
+      { label: "Withdraw Enabled", note: "Borrower can move remaining funds to personal wallet" }
+    ];
+  }
+
+  if (loan.lastEvent === "withdrawn") {
+    return [
+      { label: "Loan Closed", note: "Borrower chose not to continue borrowing" },
+      { label: "Lender Released", note: "Lender has no further vault rights" },
+      { label: "Vault Unlocked", note: "Shared account is no longer controlled by lender" },
+      { label: "Funds Out", note: "Borrower can withdraw to personal wallet" }
     ];
   }
 
@@ -20,7 +38,7 @@ function buildNodes(loan: Loan | null) {
       { label: `Profit +${pnl.toFixed(2)}U`, note: "Strategy made money today" },
       { label: "Auto Repay 50%", note: `${(pnl * 0.5).toFixed(2)}U goes to loan repayment` },
       { label: "Borrower 30%", note: `${(pnl * 0.3).toFixed(2)}U borrower earnings` },
-      { label: "Lender 20%", note: `${(pnl * 0.2).toFixed(2)}U lender yield` }
+      { label: "Lender 20%", note: `${(pnl * 0.2).toFixed(2)}U lender yield until repayment completes` }
     ];
   }
 

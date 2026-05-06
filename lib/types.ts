@@ -33,17 +33,19 @@ export type Loan = {
   collateral: number;
   risk: RiskResult;
   expectedYield: string;
+  interestDue: number;
+  repaymentTarget: number;
   currentYield: number;
   currentCollateral: number;
   lastPnl: number;
-  lastEvent: "none" | "profit" | "loss" | "liquidated";
+  lastEvent: "none" | "profit" | "loss" | "liquidated" | "repaid" | "withdrawn";
   repaid: number;
   borrowerEarnings: number;
   lenderEarnings: number;
   pnlHistory: YieldPoint[];
   createdAt: string;
   funded: boolean;
-  vaultStatus: "pending" | "funded" | "strategy" | "loss" | "liquidated";
+  vaultStatus: "pending" | "funded" | "strategy" | "loss" | "liquidated" | "repaid" | "withdrawn";
 };
 
 export type YieldPoint = {

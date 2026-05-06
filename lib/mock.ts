@@ -1,10 +1,17 @@
 import type { Loan, RiskLevel, RiskResult, YieldPoint } from "./types";
 
+type RiskBand = {
+  level: RiskLevel;
+  score: number;
+  label: string;
+  explanation: string;
+};
+
 export function calculateRisk(amount: number, collateral: number): RiskResult {
   const collateralRatio = Math.round((collateral / Math.max(amount, 1)) * 100);
   const collateralBand = getCollateralBand(collateralRatio);
   const yieldAbilityScore = getYieldAbilityScore(amount, collateralRatio);
-  const strategyRiskScore = getStrategySafetyScore(amount);
+  const strategyRiskScore = getStrategySafetyScore(collateralRatio);
   const marketVolatilityScore = getMarketVolatilityScore(collateralRatio);
   const creditScore = Math.round(
     collateralBand.score * 0.4 +
@@ -12,16 +19,8 @@ export function calculateRisk(amount: number, collateral: number): RiskResult {
       strategyRiskScore * 0.2 +
       marketVolatilityScore * 0.1
   );
-
-  let riskLevel: RiskLevel = "liquidation";
-  if (collateralRatio >= 180) riskLevel = "very-low";
-  else if (collateralRatio >= 160) riskLevel = "low";
-  else if (collateralRatio >= 140) riskLevel = "medium";
-  else if (collateralRatio >= 120) riskLevel = "elevated";
-  else if (collateralRatio >= 100) riskLevel = "high";
-
-  const defaultRate = getDefaultProbability(riskLevel);
-  const approved = collateralRatio >= 100 && creditScore >= 40;
+  const approved = collateralRatio >= 120 && creditScore >= 40;
+  const defaultRate = getDefaultProbability(collateralBand.level);
   const aiReason = buildAiReason(
     collateralRatio,
     collateralBand.label,
@@ -41,35 +40,35 @@ export function calculateRisk(amount: number, collateral: number): RiskResult {
   return {
     creditScore,
     collateralRatio,
-    riskLevel,
+    riskLevel: collateralBand.level,
     riskLabel: collateralBand.label,
     riskExplanation: collateralBand.explanation,
     defaultProbability: defaultRate,
     approved,
     factors: {
       collateralRatio: {
-        label: "抵押率",
+        label: "Collateral Ratio",
         score: collateralBand.score,
         weight: 40,
         explanation: collateralBand.explanation,
         private: false
       },
       yieldAbility: {
-        label: "收益能力",
+        label: "Yield Ability",
         score: yieldAbilityScore,
         weight: 30,
         explanation: getYieldExplanation(yieldAbilityScore),
         private: true
       },
       strategyRisk: {
-        label: "策略风险",
+        label: "Strategy Risk",
         score: strategyRiskScore,
         weight: 20,
         explanation: getStrategyExplanation(strategyRiskScore),
         private: true
       },
       marketVolatility: {
-        label: "市场波动",
+        label: "Market Volatility",
         score: marketVolatilityScore,
         weight: 10,
         explanation: getMarketExplanation(marketVolatilityScore),
@@ -81,39 +80,71 @@ export function calculateRisk(amount: number, collateral: number): RiskResult {
   };
 }
 
-function getCollateralBand(ratio: number) {
-  if (ratio >= 180) return { score: 95, label: "低风险", explanation: "抵押率达到 180% 以上，安全垫非常充足。" };
-  if (ratio >= 160) return { score: 82, label: "较低风险", explanation: "抵押率位于 160%-180%，抵押资产覆盖较安全。" };
-  if (ratio >= 140) return { score: 68, label: "中风险", explanation: "抵押率位于 140%-160%，可接受但需要关注收益表现。" };
-  if (ratio >= 120) return { score: 50, label: "较高风险", explanation: "抵押率位于 120%-140%，接近危险区间。" };
-  if (ratio >= 100) return { score: 30, label: "高风险", explanation: "抵押率位于 100%-120%，价格波动时容易触发清算。" };
-  return { score: 10, label: "爆仓区", explanation: "抵押率低于 100%，抵押不足，不允许借款。" };
+function getCollateralBand(ratio: number): RiskBand {
+  if (ratio >= 180) {
+    return {
+      level: "very-low",
+      score: 95,
+      label: "Low Risk",
+      explanation: "Collateral ratio is 180%+, strategy is stable staking, and volatility is low."
+    };
+  }
+  if (ratio >= 150) {
+    return {
+      level: "medium",
+      score: 72,
+      label: "Medium Risk",
+      explanation: "Collateral ratio is 150%-180%, strategy risk is moderate, and market volatility is normal."
+    };
+  }
+  if (ratio >= 130) {
+    return {
+      level: "high",
+      score: 48,
+      label: "High Risk",
+      explanation: "Collateral ratio is 130%-150%; high-volatility strategies like LP, high-frequency, or meme exposure need higher APR."
+    };
+  }
+  if (ratio >= 120) {
+    return {
+      level: "high",
+      score: 35,
+      label: "High Risk",
+      explanation: "Collateral ratio is close to liquidation. Borrower collateral is still first-loss, but lender APR must be high."
+    };
+  }
+  return {
+    level: "liquidation",
+    score: 10,
+    label: "Liquidation Zone",
+    explanation: "Collateral ratio is below 120%, so the strategy should stop and the loan cannot continue."
+  };
 }
 
 function getYieldAbilityScore(amount: number, ratio: number) {
-  const base = ratio >= 160 ? 82 : ratio >= 140 ? 68 : ratio >= 120 ? 52 : 35;
+  const base = ratio >= 180 ? 92 : ratio >= 150 ? 72 : ratio >= 130 ? 52 : 35;
   const amountPenalty = amount > 2000 ? 14 : amount > 1000 ? 8 : 0;
   return Math.max(20, Math.min(95, base - amountPenalty));
 }
 
-function getStrategySafetyScore(amount: number) {
-  if (amount <= 600) return 86;
-  if (amount <= 1200) return 76;
-  if (amount <= 2200) return 64;
-  return 52;
+function getStrategySafetyScore(ratio: number) {
+  if (ratio >= 180) return 92;
+  if (ratio >= 150) return 72;
+  if (ratio >= 130) return 48;
+  return 35;
 }
 
 function getMarketVolatilityScore(ratio: number) {
-  if (ratio >= 180) return 82;
-  if (ratio >= 150) return 72;
-  if (ratio >= 120) return 58;
-  return 38;
+  if (ratio >= 180) return 88;
+  if (ratio >= 150) return 70;
+  if (ratio >= 130) return 45;
+  return 30;
 }
 
 function getDefaultProbability(level: RiskLevel) {
   const rates: Record<RiskLevel, string> = {
     "very-low": "3%",
-    low: "6%",
+    low: "5%",
     medium: "12%",
     elevated: "22%",
     high: "35%",
@@ -123,27 +154,33 @@ function getDefaultProbability(level: RiskLevel) {
 }
 
 export function getLenderApr(level: RiskLevel) {
-  if (level === "very-low" || level === "low") return "8% APR";
-  if (level === "medium") return "15% APR";
-  return "25% APR";
+  if (level === "very-low" || level === "low") return "8% - 12% APR";
+  if (level === "medium") return "12% - 20% APR";
+  return "20% - 35% APR";
+}
+
+export function getLenderAprRate(level: RiskLevel) {
+  if (level === "very-low" || level === "low") return 0.1;
+  if (level === "medium") return 0.16;
+  return 0.275;
 }
 
 function getYieldExplanation(score: number) {
-  if (score >= 80) return "模拟收益能力较强，预计 Vault 策略现金流可以覆盖还款节奏。";
-  if (score >= 60) return "模拟收益能力中等，能支持自动还款但需要持续监控。";
-  return "模拟收益能力偏弱，还款主要依赖抵押安全垫。";
+  if (score >= 80) return "Yield ability is strong enough to support automatic repayment.";
+  if (score >= 60) return "Yield ability is moderate and should be monitored.";
+  return "Yield ability is weak; repayment relies more on collateral safety.";
 }
 
 function getStrategyExplanation(score: number) {
-  if (score >= 80) return "策略规模较小，mock 策略风险较低。";
-  if (score >= 65) return "策略风险中等，适合受控 Vault 执行。";
-  return "策略风险偏高，应限制资金使用范围。";
+  if (score >= 80) return "Strategy is stable, staking-like, and suitable for low-risk financing.";
+  if (score >= 60) return "Strategy risk is moderate.";
+  return "Strategy is high volatility and needs strict vault control.";
 }
 
 function getMarketExplanation(score: number) {
-  if (score >= 75) return "当前抵押安全垫可吸收较大市场波动。";
-  if (score >= 55) return "市场波动对头寸有影响，需要保留预警。";
-  return "市场波动可能快速压缩抵押率。";
+  if (score >= 80) return "Market volatility is low.";
+  if (score >= 60) return "Market volatility is normal.";
+  return "Market volatility can quickly pressure collateral ratio.";
 }
 
 function buildAiReason(
@@ -154,8 +191,8 @@ function buildAiReason(
   marketScore: number,
   approved: boolean
 ) {
-  const decision = approved ? "因此该申请可以进入放款列表。" : "因此该申请暂不允许借款。";
-  return `AI 风控判断为${label}：抵押率为 ${ratio}%，抵押覆盖是主要依据；收益能力评分 ${yieldScore}/100，决定自动还款的可持续性；策略风险评分 ${strategyScore}/100，说明资金进入 Vault 后的策略安全边界；市场波动评分 ${marketScore}/100，用于判断清算压力。${decision}`;
+  const decision = approved ? "The application can enter the lending list." : "The application should not continue.";
+  return `AI risk assessment: ${label}. Collateral ratio is ${ratio}%; yield ability is ${yieldScore}/100; strategy safety is ${strategyScore}/100; market stability is ${marketScore}/100. ${decision}`;
 }
 
 function buildLenderReason(
@@ -165,13 +202,13 @@ function buildLenderReason(
   strategyScore: number,
   approved: boolean
 ) {
-  const decision = approved ? "因此该申请可以进入放款列表。" : "因此该申请暂不允许借款。";
-  return `AI 风控判断为${label}：抵押率为 ${ratio}%，抵押覆盖是核心依据；收益能力评分 ${yieldScore}/100，表示 Vault 策略收益对自动还款的支持程度；策略风险评分 ${strategyScore}/100，说明资金受控进入策略后的安全边界；市场波动已通过 ZK 风控计算，但明细仅后台可见。${decision}`;
+  const decision = approved ? "The loan can be funded under the recommended APR range." : "The loan should not be funded.";
+  return `AI risk assessment: ${label}. Collateral ratio is ${ratio}%, yield ability is ${yieldScore}/100, and strategy safety is ${strategyScore}/100. Market volatility was included in the ZK risk calculation, but detailed data is only visible to back-office staff. ${decision}`;
 }
 
 export function buildLoan(amount: number, collateral: number, borrower: string): Loan {
   const risk = calculateRisk(amount, collateral);
-  const riskYield = getLenderApr(risk.riskLevel);
+  const interestDue = Math.round(amount * getLenderAprRate(risk.riskLevel) * 100) / 100;
 
   return {
     id: `loan-${Date.now()}`,
@@ -179,7 +216,9 @@ export function buildLoan(amount: number, collateral: number, borrower: string):
     amount,
     collateral,
     risk,
-    expectedYield: riskYield,
+    expectedYield: getLenderApr(risk.riskLevel),
+    interestDue,
+    repaymentTarget: amount + interestDue,
     currentYield: 0,
     currentCollateral: collateral,
     lastPnl: 0,
@@ -195,11 +234,14 @@ export function buildLoan(amount: number, collateral: number, borrower: string):
 }
 
 export function simulateYield(loan: Loan, days = 1): Loan {
-  if (loan.vaultStatus === "liquidated") return loan;
+  if (loan.vaultStatus === "liquidated" || loan.vaultStatus === "repaid" || loan.vaultStatus === "withdrawn") {
+    return loan;
+  }
 
   const dailyPnl = Math.round((Math.random() * 200 - 100) * 100) / 100;
   const currentCollateral = loan.currentCollateral ?? loan.collateral;
   const history = loan.pnlHistory ?? [];
+  const repaymentTarget = loan.repaymentTarget ?? loan.amount;
   const baseLoan = {
     ...loan,
     funded: true,
@@ -211,11 +253,12 @@ export function simulateYield(loan: Loan, days = 1): Loan {
     const repayShare = dailyPnl * 0.5 * days;
     const borrowerShare = dailyPnl * 0.3 * days;
     const lenderShare = dailyPnl * 0.2 * days;
-    const nextRepaid = Math.min(loan.amount, loan.repaid + repayShare);
+    const nextRepaid = Math.min(repaymentTarget, loan.repaid + repayShare);
+    const repaidInFull = nextRepaid >= repaymentTarget;
     const nextLoan = {
       ...baseLoan,
-      vaultStatus: "strategy" as const,
-      lastEvent: "profit" as const,
+      vaultStatus: repaidInFull ? ("repaid" as const) : ("strategy" as const),
+      lastEvent: repaidInFull ? ("repaid" as const) : ("profit" as const),
       repaid: nextRepaid,
       borrowerEarnings: loan.borrowerEarnings + borrowerShare,
       lenderEarnings: loan.lenderEarnings + lenderShare,
@@ -245,19 +288,42 @@ export function simulateYield(loan: Loan, days = 1): Loan {
   };
 }
 
+export function continueBorrowing(loan: Loan): Loan {
+  if (loan.vaultStatus !== "repaid") return loan;
+  return {
+    ...loan,
+    repaid: 0,
+    currentYield: 0,
+    borrowerEarnings: 0,
+    lenderEarnings: 0,
+    lastPnl: 0,
+    lastEvent: "none",
+    pnlHistory: [],
+    vaultStatus: "strategy"
+  };
+}
+
+export function withdrawAfterRepayment(loan: Loan): Loan {
+  if (loan.vaultStatus !== "repaid") return loan;
+  return {
+    ...loan,
+    lastEvent: "withdrawn",
+    vaultStatus: "withdrawn"
+  };
+}
+
 export function createYieldSeries(loan: Loan): YieldPoint[] {
   if (loan.pnlHistory?.length) return loan.pnlHistory;
 
-  return Array.from({ length: 7 }, (_, index) => {
-    const dayYield = Math.min(loan.currentYield || 2, (index + 1) * 2);
-    return {
-      day: `D${index + 1}`,
-      pnl: index === 0 ? loan.lastPnl ?? 0 : 0,
-      yield: dayYield,
-      repaid: Math.min(loan.amount, dayYield * 0.5),
+  return [
+    {
+      day: "D1",
+      pnl: loan.lastPnl ?? 0,
+      yield: loan.currentYield ?? 0,
+      repaid: loan.repaid ?? 0,
       collateral: loan.currentCollateral ?? loan.collateral
-    };
-  });
+    }
+  ];
 }
 
 function appendPnlPoint(loan: Loan, history: YieldPoint[]) {
@@ -275,45 +341,13 @@ function appendPnlPoint(loan: Loan, history: YieldPoint[]) {
 
 export const seedLoans: Loan[] = [
   {
-    id: "seed-1",
-    borrower: "8fQe...2a91",
-    amount: 500,
-    collateral: 800,
-    risk: calculateRisk(500, 800),
-    expectedYield: getLenderApr(calculateRisk(500, 800).riskLevel),
-    currentYield: 18,
-    currentCollateral: 800,
-    lastPnl: 18,
-    lastEvent: "profit",
-    repaid: 9,
-    borrowerEarnings: 5.4,
-    lenderEarnings: 3.6,
-    pnlHistory: [
-      { day: "D1", pnl: 18, yield: 18, repaid: 9, collateral: 800 }
-    ],
-    createdAt: new Date().toISOString(),
-    funded: false,
-    vaultStatus: "pending"
+    ...buildLoan(500, 920, "8fQe...2a91"),
+    id: "seed-low",
+    vaultStatus: "strategy",
+    funded: true
   },
   {
-    id: "seed-2",
-    borrower: "D4kP...93de",
-    amount: 1200,
-    collateral: 1450,
-    risk: calculateRisk(1200, 1450),
-    expectedYield: getLenderApr(calculateRisk(1200, 1450).riskLevel),
-    currentYield: 10,
-    currentCollateral: 1450,
-    lastPnl: 10,
-    lastEvent: "profit",
-    repaid: 5,
-    borrowerEarnings: 3,
-    lenderEarnings: 2,
-    pnlHistory: [
-      { day: "D1", pnl: 10, yield: 10, repaid: 5, collateral: 1450 }
-    ],
-    createdAt: new Date().toISOString(),
-    funded: false,
-    vaultStatus: "pending"
+    ...buildLoan(1200, 1900, "D4kP...93de"),
+    id: "seed-medium"
   }
 ];

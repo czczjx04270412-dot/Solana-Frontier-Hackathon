@@ -9,8 +9,9 @@ import CollateralRiskTable from "@/components/CollateralRiskTable";
 import { useLoans } from "@/lib/LoanContext";
 
 export default function Dashboard() {
-  const { activeLoan, accrueYield } = useLoans();
+  const { activeLoan, accrueYield, continueActiveLoan, withdrawActiveLoan } = useLoans();
   const collateral = activeLoan?.currentCollateral ?? activeLoan?.collateral ?? 0;
+  const isClosed = activeLoan?.vaultStatus === "liquidated" || activeLoan?.vaultStatus === "repaid" || activeLoan?.vaultStatus === "withdrawn";
 
   return (
     <Layout>
@@ -26,7 +27,7 @@ export default function Dashboard() {
         <MetricCard label="Risk Score" value={`${activeLoan?.risk.creditScore ?? 0}`} tone="amber" />
         <MetricCard
           label="Risk Level"
-          value={activeLoan?.vaultStatus === "liquidated" ? "Liquidated" : activeLoan?.risk.riskLabel ?? "N/A"}
+          value={activeLoan?.vaultStatus === "liquidated" ? "Liquidated" : activeLoan?.vaultStatus === "repaid" ? "Repaid" : activeLoan?.vaultStatus === "withdrawn" ? "Withdrawn" : activeLoan?.risk.riskLabel ?? "N/A"}
           tone={activeLoan?.vaultStatus === "liquidated" || activeLoan?.risk.riskLevel === "high" ? "danger" : "aqua"}
         />
       </div>
@@ -41,16 +42,32 @@ export default function Dashboard() {
             <h1 className="mt-2 text-2xl font-semibold">Simulate 1 Day Strategy P/L</h1>
             <p className="mt-3 text-sm text-slate-400">
               Each click randomly generates profit or loss from -100U to +100U. Profit
-              splits 50% repayment, 30% borrower, 20% lender. Loss is first absorbed
-              by borrower collateral; below 120% collateral ratio triggers liquidation.
+              splits 50% to principal + interest repayment, 30% borrower, 20% lender.
+              Once principal and interest are fully paid, lender control is released.
             </p>
             <button
               onClick={() => accrueYield(1)}
-              disabled={activeLoan?.vaultStatus === "liquidated"}
+              disabled={isClosed}
               className="mt-5 w-full rounded-md bg-aqua px-4 py-3 font-semibold text-ink transition hover:bg-aqua/90 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300"
             >
-              {activeLoan?.vaultStatus === "liquidated" ? "Strategy Stopped" : "Simulate 1 Day P/L"}
+              {isClosed ? "Strategy Stopped" : "Simulate 1 Day P/L"}
             </button>
+            {activeLoan?.vaultStatus === "repaid" ? (
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <button
+                  onClick={continueActiveLoan}
+                  className="rounded-md border border-aqua/60 px-4 py-3 font-semibold text-aqua transition hover:bg-aqua hover:text-ink"
+                >
+                  Continue Borrowing
+                </button>
+                <button
+                  onClick={withdrawActiveLoan}
+                  className="rounded-md border border-lime/60 px-4 py-3 font-semibold text-lime transition hover:bg-lime hover:text-ink"
+                >
+                  Withdraw to Wallet
+                </button>
+              </div>
+            ) : null}
           </section>
           <RepaymentProgress loan={activeLoan} />
           <ZKProofCard />
