@@ -181,9 +181,13 @@ export function buildLoan(amount: number, collateral: number, borrower: string):
     risk,
     expectedYield: riskYield,
     currentYield: 0,
+    currentCollateral: collateral,
+    lastPnl: 0,
+    lastEvent: "none",
     repaid: 0,
     borrowerEarnings: 0,
     lenderEarnings: 0,
+    pnlHistory: [],
     createdAt: new Date().toISOString(),
     funded: false,
     vaultStatus: "pending"
@@ -191,32 +195,82 @@ export function buildLoan(amount: number, collateral: number, borrower: string):
 }
 
 export function simulateYield(loan: Loan, days = 1): Loan {
-  const dailyYield = 2 * days;
-  const repayShare = dailyYield * 0.5;
-  const borrowerShare = dailyYield * 0.3;
-  const lenderShare = dailyYield * 0.2;
-  const nextRepaid = Math.min(loan.amount, loan.repaid + repayShare);
+  if (loan.vaultStatus === "liquidated") return loan;
 
-  return {
+  const dailyPnl = Math.round((Math.random() * 200 - 100) * 100) / 100;
+  const currentCollateral = loan.currentCollateral ?? loan.collateral;
+  const history = loan.pnlHistory ?? [];
+  const baseLoan = {
     ...loan,
     funded: true,
-    vaultStatus: "strategy",
-    currentYield: loan.currentYield + dailyYield,
-    repaid: nextRepaid,
-    borrowerEarnings: loan.borrowerEarnings + borrowerShare,
-    lenderEarnings: loan.lenderEarnings + lenderShare
+    lastPnl: dailyPnl,
+    currentYield: loan.currentYield + dailyPnl
+  };
+
+  if (dailyPnl >= 0) {
+    const repayShare = dailyPnl * 0.5 * days;
+    const borrowerShare = dailyPnl * 0.3 * days;
+    const lenderShare = dailyPnl * 0.2 * days;
+    const nextRepaid = Math.min(loan.amount, loan.repaid + repayShare);
+    const nextLoan = {
+      ...baseLoan,
+      vaultStatus: "strategy" as const,
+      lastEvent: "profit" as const,
+      repaid: nextRepaid,
+      borrowerEarnings: loan.borrowerEarnings + borrowerShare,
+      lenderEarnings: loan.lenderEarnings + lenderShare,
+      currentCollateral
+    };
+
+    return {
+      ...nextLoan,
+      pnlHistory: appendPnlPoint(nextLoan, history)
+    };
+  }
+
+  const lossAmount = Math.abs(dailyPnl) * days;
+  const nextCollateral = Math.max(0, currentCollateral - lossAmount);
+  const nextRatio = (nextCollateral / Math.max(loan.amount, 1)) * 100;
+  const liquidated = nextRatio < 120;
+  const nextLoan = {
+    ...baseLoan,
+    vaultStatus: liquidated ? ("liquidated" as const) : ("loss" as const),
+    lastEvent: liquidated ? ("liquidated" as const) : ("loss" as const),
+    currentCollateral: nextCollateral
+  };
+
+  return {
+    ...nextLoan,
+    pnlHistory: appendPnlPoint(nextLoan, history)
   };
 }
 
 export function createYieldSeries(loan: Loan): YieldPoint[] {
+  if (loan.pnlHistory?.length) return loan.pnlHistory;
+
   return Array.from({ length: 7 }, (_, index) => {
     const dayYield = Math.min(loan.currentYield || 2, (index + 1) * 2);
     return {
       day: `D${index + 1}`,
+      pnl: index === 0 ? loan.lastPnl ?? 0 : 0,
       yield: dayYield,
-      repaid: Math.min(loan.amount, dayYield * 0.5)
+      repaid: Math.min(loan.amount, dayYield * 0.5),
+      collateral: loan.currentCollateral ?? loan.collateral
     };
   });
+}
+
+function appendPnlPoint(loan: Loan, history: YieldPoint[]) {
+  return [
+    ...history,
+    {
+      day: `D${history.length + 1}`,
+      pnl: loan.lastPnl,
+      yield: loan.currentYield,
+      repaid: loan.repaid,
+      collateral: loan.currentCollateral
+    }
+  ].slice(-14);
 }
 
 export const seedLoans: Loan[] = [
@@ -228,9 +282,15 @@ export const seedLoans: Loan[] = [
     risk: calculateRisk(500, 800),
     expectedYield: getLenderApr(calculateRisk(500, 800).riskLevel),
     currentYield: 18,
+    currentCollateral: 800,
+    lastPnl: 18,
+    lastEvent: "profit",
     repaid: 9,
     borrowerEarnings: 5.4,
     lenderEarnings: 3.6,
+    pnlHistory: [
+      { day: "D1", pnl: 18, yield: 18, repaid: 9, collateral: 800 }
+    ],
     createdAt: new Date().toISOString(),
     funded: false,
     vaultStatus: "pending"
@@ -243,9 +303,15 @@ export const seedLoans: Loan[] = [
     risk: calculateRisk(1200, 1450),
     expectedYield: getLenderApr(calculateRisk(1200, 1450).riskLevel),
     currentYield: 10,
+    currentCollateral: 1450,
+    lastPnl: 10,
+    lastEvent: "profit",
     repaid: 5,
     borrowerEarnings: 3,
     lenderEarnings: 2,
+    pnlHistory: [
+      { day: "D1", pnl: 10, yield: 10, repaid: 5, collateral: 1450 }
+    ],
     createdAt: new Date().toISOString(),
     funded: false,
     vaultStatus: "pending"
