@@ -12,8 +12,8 @@ type LoanContextValue = {
 };
 
 const LoanContext = createContext<LoanContextValue | null>(null);
-const storageKey = "solana-defi-vault-loans-v2";
-const activeKey = "solana-defi-vault-active-loan-v2";
+const storageKey = "solana-defi-vault-loans-v3";
+const activeKey = "solana-defi-vault-active-loan-v3";
 
 export function LoanProvider({ children }: { children: ReactNode }) {
   const [loans, setLoans] = useState<Loan[]>(seedLoans);

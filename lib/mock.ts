@@ -122,6 +122,12 @@ function getDefaultProbability(level: RiskLevel) {
   return rates[level];
 }
 
+export function getLenderApr(level: RiskLevel) {
+  if (level === "very-low" || level === "low") return "8% APR";
+  if (level === "medium") return "15% APR";
+  return "25% APR";
+}
+
 function getYieldExplanation(score: number) {
   if (score >= 80) return "模拟收益能力较强，预计 Vault 策略现金流可以覆盖还款节奏。";
   if (score >= 60) return "模拟收益能力中等，能支持自动还款但需要持续监控。";
@@ -165,7 +171,7 @@ function buildLenderReason(
 
 export function buildLoan(amount: number, collateral: number, borrower: string): Loan {
   const risk = calculateRisk(amount, collateral);
-  const riskYield = risk.riskLevel === "low" ? "8.5%" : risk.riskLevel === "medium" ? "13.2%" : "19.8%";
+  const riskYield = getLenderApr(risk.riskLevel);
 
   return {
     id: `loan-${Date.now()}`,
@@ -220,7 +226,7 @@ export const seedLoans: Loan[] = [
     amount: 500,
     collateral: 800,
     risk: calculateRisk(500, 800),
-    expectedYield: "8.5%",
+    expectedYield: getLenderApr(calculateRisk(500, 800).riskLevel),
     currentYield: 18,
     repaid: 9,
     borrowerEarnings: 5.4,
@@ -235,7 +241,7 @@ export const seedLoans: Loan[] = [
     amount: 1200,
     collateral: 1450,
     risk: calculateRisk(1200, 1450),
-    expectedYield: "13.2%",
+    expectedYield: getLenderApr(calculateRisk(1200, 1450).riskLevel),
     currentYield: 10,
     repaid: 5,
     borrowerEarnings: 3,

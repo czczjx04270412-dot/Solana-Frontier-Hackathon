@@ -34,7 +34,7 @@ export default function LoanCard({ loan }: { loan: Loan }) {
           <p className="mt-1 font-semibold">{loan.risk.creditScore}</p>
         </div>
         <div>
-          <p className="text-xs text-slate-500">Yield</p>
+          <p className="text-xs text-slate-500">Lender APR</p>
           <p className="mt-1 font-semibold">{loan.expectedYield}</p>
         </div>
       </div>

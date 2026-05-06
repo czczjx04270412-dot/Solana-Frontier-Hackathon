@@ -25,7 +25,7 @@ export default function YieldChart({ loan }: { loan: Loan | null }) {
       aiReason: "AI 风控判断为中风险。",
       lenderVisibleReason: "AI 风控判断为中风险。"
     },
-    expectedYield: "13.2%",
+    expectedYield: "15% APR",
     currentYield: 2,
     repaid: 1,
     borrowerEarnings: 0.6,
