@@ -1,3 +1,4 @@
+import DemoScenarioControls from "@/components/DemoScenarioControls";
 import Layout from "@/components/Layout";
 import MetricCard from "@/components/MetricCard";
 import NextStepGuide from "@/components/NextStepGuide";
@@ -14,6 +15,11 @@ export default function VaultPage() {
     activeLoan?.vaultStatus === "liquidated" ||
     activeLoan?.vaultStatus === "repaid" ||
     activeLoan?.vaultStatus === "withdrawn";
+  const canRunStrategy =
+    activeLoan?.borrowerApprovalStatus === "approved" &&
+    activeLoan?.lenderApprovalStatus === "approved" &&
+    activeLoan?.funded &&
+    !isClosed;
 
   return (
     <Layout>
@@ -46,14 +52,16 @@ export default function VaultPage() {
             </p>
             <button
               onClick={() => accrueYield(1)}
-              disabled={isClosed}
+              disabled={!canRunStrategy}
               className="mt-5 w-full rounded-md bg-aqua px-4 py-3 font-semibold text-ink transition hover:bg-aqua/90 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300"
             >
-              {isClosed ? "协议已结束" : "运行 1 天策略盈亏"}
+              {isClosed ? "协议已结束" : canRunStrategy ? "运行 1 天随机盈亏" : "等待后台审核通过"}
             </button>
           </div>
           <YieldChart loan={activeLoan} />
         </section>
+
+        <DemoScenarioControls />
         <NextStepGuide page="vault" />
       </div>
     </Layout>

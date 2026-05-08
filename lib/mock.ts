@@ -178,6 +178,8 @@ export function buildLoan(amount: number, collateral: number, borrower: string):
     excessProfitToBorrower: 0,
     pnlHistory: [],
     createdAt: new Date().toISOString(),
+    borrowerApprovalStatus: "pending",
+    lenderApprovalStatus: "not-started",
     funded: false,
     vaultStatus: "pending"
   };
@@ -323,6 +325,18 @@ export function applyDemoScenario(loan: Loan, scenario: "profit" | "loss" | "liq
 }
 
 export const seedLoans: Loan[] = [
-  { ...buildLoan(500, 920, "8fQe...2a91"), id: "seed-low", vaultStatus: "strategy", funded: true },
-  { ...buildLoan(1200, 1900, "D4kP...93de"), id: "seed-medium" }
+  {
+    ...buildLoan(500, 920, "8fQe...2a91"),
+    id: "seed-low",
+    borrowerApprovalStatus: "approved",
+    lenderApprovalStatus: "approved",
+    vaultStatus: "strategy",
+    funded: true
+  },
+  {
+    ...buildLoan(1200, 1900, "D4kP...93de"),
+    id: "seed-medium",
+    borrowerApprovalStatus: "approved",
+    lenderApprovalStatus: "not-started"
+  }
 ];

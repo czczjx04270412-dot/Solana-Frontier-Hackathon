@@ -7,6 +7,8 @@ type LoanContextValue = {
   activeLoan: Loan | null;
   createLoan: (amount: number, collateral: number, borrower: string) => Loan;
   fundLoan: (id: string) => void;
+  reviewBorrowerRequest: (id: string, decision: "approved" | "rejected") => void;
+  reviewLenderRequest: (id: string, decision: "approved" | "rejected") => void;
   accrueYield: (days?: number) => void;
   continueActiveLoan: () => void;
   withdrawActiveLoan: () => void;
@@ -20,8 +22,8 @@ type LoanContextValue = {
 };
 
 const LoanContext = createContext<LoanContextValue | null>(null);
-const storageKey = "solana-defi-vault-loans-v9";
-const activeKey = "solana-defi-vault-active-loan-v9";
+const storageKey = "solana-defi-vault-loans-v10";
+const activeKey = "solana-defi-vault-active-loan-v10";
 
 function refreshVaultRisk(loan: Loan): Loan {
   const vaultNav = loan.vaultUsdc + loan.vaultSol * loan.solPrice;
@@ -79,13 +81,46 @@ export function LoanProvider({ children }: { children: ReactNode }) {
     fundLoan(id) {
       setLoans((current) =>
         current.map((loan) =>
-          loan.id === id ? { ...loan, funded: true, vaultStatus: "funded" } : loan
+          loan.id === id && loan.borrowerApprovalStatus === "approved"
+            ? { ...loan, lenderApprovalStatus: "pending", vaultStatus: "pending" }
+            : loan
+        )
+      );
+      setActiveLoanIdState(id);
+    },
+    reviewBorrowerRequest(id, decision) {
+      setLoans((current) =>
+        current.map((loan) =>
+          loan.id === id
+            ? {
+                ...loan,
+                borrowerApprovalStatus: decision,
+                lenderApprovalStatus: decision === "approved" ? loan.lenderApprovalStatus : "not-started",
+                vaultStatus: decision === "approved" ? loan.vaultStatus : "pending"
+              }
+            : loan
+        )
+      );
+      setActiveLoanIdState(id);
+    },
+    reviewLenderRequest(id, decision) {
+      setLoans((current) =>
+        current.map((loan) =>
+          loan.id === id
+            ? {
+                ...loan,
+                lenderApprovalStatus: decision,
+                funded: decision === "approved",
+                vaultStatus: decision === "approved" ? "funded" : "pending"
+              }
+            : loan
         )
       );
       setActiveLoanIdState(id);
     },
     accrueYield(days = 1) {
       if (!activeLoan) return;
+      if (activeLoan.borrowerApprovalStatus !== "approved" || activeLoan.lenderApprovalStatus !== "approved" || !activeLoan.funded) return;
       setLoans((current) =>
         current.map((loan) => (loan.id === activeLoan.id ? simulateYield(loan, days) : loan))
       );
@@ -103,7 +138,7 @@ export function LoanProvider({ children }: { children: ReactNode }) {
       );
     },
     vaultBuySol() {
-      if (!activeLoan || activeLoan.vaultStatus === "liquidated") return;
+      if (!activeLoan || activeLoan.vaultStatus === "liquidated" || activeLoan.lenderApprovalStatus !== "approved") return;
       setLoans((current) =>
         current.map((loan) => {
           if (loan.id !== activeLoan.id) return loan;
@@ -120,7 +155,7 @@ export function LoanProvider({ children }: { children: ReactNode }) {
       );
     },
     vaultSellSol() {
-      if (!activeLoan || activeLoan.vaultStatus === "liquidated") return;
+      if (!activeLoan || activeLoan.vaultStatus === "liquidated" || activeLoan.lenderApprovalStatus !== "approved") return;
       setLoans((current) =>
         current.map((loan) => {
           if (loan.id !== activeLoan.id) return loan;
@@ -137,7 +172,7 @@ export function LoanProvider({ children }: { children: ReactNode }) {
       );
     },
     simulatePriceMove() {
-      if (!activeLoan || activeLoan.vaultStatus === "liquidated") return;
+      if (!activeLoan || activeLoan.vaultStatus === "liquidated" || activeLoan.lenderApprovalStatus !== "approved") return;
       setLoans((current) =>
         current.map((loan) => {
           if (loan.id !== activeLoan.id) return loan;
@@ -164,6 +199,7 @@ export function LoanProvider({ children }: { children: ReactNode }) {
     },
     runDemoScenario(scenario) {
       if (!activeLoan) return;
+      if (activeLoan.borrowerApprovalStatus !== "approved" || activeLoan.lenderApprovalStatus !== "approved" || !activeLoan.funded) return;
       setLoans((current) =>
         current.map((loan) => (loan.id === activeLoan.id ? applyDemoScenario(loan, scenario) : loan))
       );

@@ -52,6 +52,8 @@ export type Loan = {
   excessProfitToBorrower: number;
   pnlHistory: YieldPoint[];
   createdAt: string;
+  borrowerApprovalStatus: "pending" | "approved" | "rejected";
+  lenderApprovalStatus: "not-started" | "pending" | "approved" | "rejected";
   funded: boolean;
   vaultStatus: "pending" | "funded" | "strategy" | "loss" | "liquidated" | "repaid" | "withdrawn";
 };
