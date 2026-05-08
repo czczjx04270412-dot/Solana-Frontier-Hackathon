@@ -4,11 +4,12 @@ import { ReactNode } from "react";
 import ConnectWalletButton from "./ConnectWalletButton";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/borrow", label: "Borrow" },
-  { href: "/lend", label: "Lend" },
+  { href: "/dashboard", label: "总览" },
+  { href: "/borrow", label: "借方" },
+  { href: "/lend", label: "贷方" },
   { href: "/vault", label: "Vault" },
-  { href: "/repay", label: "Repay" }
+  { href: "/repay", label: "结算" },
+  { href: "/risk-admin", label: "后台风控" }
 ];
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -24,8 +25,8 @@ export default function Layout({ children }: { children: ReactNode }) {
               SV
             </span>
             <span>
-              <span className="block text-sm font-semibold tracking-wide">Solana Vault Credit</span>
-              <span className="block text-xs text-slate-400">AI risk, ZK display, controlled funds</span>
+              <span className="block text-sm font-semibold tracking-wide">Solana 融资资金库</span>
+              <span className="block text-xs text-slate-400">AI 风控 · ZK 隐私展示 · 受控资金使用</span>
             </span>
           </Link>
           <nav className="hidden items-center gap-1 md:flex">

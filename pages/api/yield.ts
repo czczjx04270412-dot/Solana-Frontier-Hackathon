@@ -2,12 +2,12 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 export default function handler(_req: NextApiRequest, res: NextApiResponse) {
   res.status(200).json({
-    dailyYield: 2,
-    repaid: 20,
+    dailyMoveRange: "-10% to +10%",
+    lenderProfitLocked: 2.5,
+    strategyReinvestPool: 47.5,
     split: {
-      repayLoan: "50%",
-      borrower: "30%",
-      lender: "20%"
+      lenderProfitLock: "5%",
+      strategyReinvest: "95%"
     }
   });
 }

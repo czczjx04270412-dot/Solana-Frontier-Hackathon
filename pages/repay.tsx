@@ -1,54 +1,55 @@
 import Layout from "@/components/Layout";
+import LoanEconomicsPanel from "@/components/LoanEconomicsPanel";
+import NextStepGuide from "@/components/NextStepGuide";
+import ProfitLedgerBoard from "@/components/ProfitLedgerBoard";
 import RepaymentProgress from "@/components/RepaymentProgress";
+import SettlementSummary from "@/components/SettlementSummary";
 import { useLoans } from "@/lib/LoanContext";
 
 export default function RepayPage() {
-  const { activeLoan, accrueYield, continueActiveLoan, withdrawActiveLoan } = useLoans();
-  const isClosed = activeLoan?.vaultStatus === "liquidated" || activeLoan?.vaultStatus === "repaid" || activeLoan?.vaultStatus === "withdrawn";
+  const { activeLoan, continueActiveLoan, withdrawActiveLoan, resetDemo } = useLoans();
 
   return (
     <Layout>
-      <div className="grid gap-6 lg:grid-cols-[0.65fr_1fr]">
+      <div className="space-y-6">
         <section className="rounded-lg border border-line bg-panel p-5">
-          <h1 className="text-2xl font-semibold">Repay</h1>
-          <p className="mt-3 text-sm text-slate-400">
-            Profit distribution: 50% automatic principal + interest repayment, 30%
-            borrower earnings, 20% lender yield. After full repayment, lender control
-            is released.
-          </p>
-          <div className="mt-5 space-y-3 rounded-lg bg-black/20 p-4">
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Borrower Earnings</span>
-              <span>{activeLoan?.borrowerEarnings.toFixed(2) ?? "0.00"} USDC</span>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold">收益归属与协议结算</h1>
+              <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-400">
+                这个页面只看结算：贷方利润锁定了多少、目标利润还差多少、贷方退出能拿多少、
+                借方剩余抵押和复投池是多少。实时交易和净值走势放在 Vault 页面。
+              </p>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Lender Earnings</span>
-              <span>{activeLoan?.lenderEarnings.toFixed(2) ?? "0.00"} USDC</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Repayment Target</span>
-              <span>{activeLoan?.repaymentTarget.toFixed(2) ?? "0.00"} USDC</span>
-            </div>
+            <button
+              onClick={resetDemo}
+              className="rounded-md border border-danger/60 px-4 py-3 font-semibold text-danger transition hover:bg-danger/10"
+            >
+              重置 Demo 数据
+            </button>
           </div>
-          <button
-            onClick={() => accrueYield(1)}
-            disabled={isClosed}
-            className="mt-5 w-full rounded-md bg-aqua px-4 py-3 font-semibold text-ink transition hover:bg-aqua/90 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300"
-          >
-            {isClosed ? "Protocol Closed" : "Simulate Auto Repayment"}
-          </button>
+
           {activeLoan?.vaultStatus === "repaid" ? (
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <button onClick={continueActiveLoan} className="rounded-md border border-aqua/60 px-4 py-3 font-semibold text-aqua">
-                Continue Borrowing
+                继续借款
               </button>
               <button onClick={withdrawActiveLoan} className="rounded-md border border-lime/60 px-4 py-3 font-semibold text-lime">
-                Withdraw to Wallet
+                出金到钱包
               </button>
             </div>
           ) : null}
         </section>
-        <RepaymentProgress loan={activeLoan} />
+
+        <ProfitLedgerBoard loan={activeLoan} />
+
+        <section className="grid gap-6 xl:grid-cols-2">
+          <SettlementSummary loan={activeLoan} />
+          <RepaymentProgress loan={activeLoan} />
+        </section>
+
+        <LoanEconomicsPanel loan={activeLoan} />
+        <NextStepGuide page="repay" />
       </div>
     </Layout>
   );

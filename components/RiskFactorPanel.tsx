@@ -15,11 +15,14 @@ export default function RiskFactorPanel({ risk }: { risk: RiskResult | null }) {
     <section className="rounded-lg border border-line bg-panel p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">Worker Only</p>
-          <h2 className="mt-2 text-xl font-semibold">ZK 风控明细</h2>
+          <p className="text-xs uppercase tracking-wide text-slate-500">仅后台可见</p>
+          <h2 className="mt-2 text-xl font-semibold">隐私风控因子明细</h2>
         </div>
-        <span className="rounded-md bg-aqua/10 px-3 py-2 text-sm text-aqua">后台可见</span>
+        <span className="rounded-md bg-aqua/10 px-3 py-2 text-sm text-aqua">对贷方隐藏</span>
       </div>
+      <p className="mt-4 text-sm leading-6 text-slate-400">
+        这里代表后台工作人员能看到的完整风控明细。贷方只能看到公开抵押率、最终评分、AI 解释和 ZK 验证结果。
+      </p>
       <div className="mt-5 space-y-3">
         {factors.map((factor) => (
           <div key={factor.label} className="rounded-md bg-black/20 p-3">

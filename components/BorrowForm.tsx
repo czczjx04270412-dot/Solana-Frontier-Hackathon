@@ -12,7 +12,7 @@ export default function BorrowForm() {
   const { publicKey } = useWallet();
   const { createLoan } = useLoans();
   const [amount, setAmount] = useState(500);
-  const [collateral, setCollateral] = useState(800);
+  const [collateral, setCollateral] = useState(920);
   const [risk, setRisk] = useState<RiskResult | null>(null);
   const [message, setMessage] = useState("");
 
@@ -21,19 +21,19 @@ export default function BorrowForm() {
     const nextRisk = calculateRisk(amount, collateral);
     setRisk(nextRisk);
     if (!nextRisk.approved) {
-      setMessage("AI mock 风控未通过，请提高抵押金额后再试。");
+      setMessage("AI 风控未通过，请提高抵押金额后再试。");
       return;
     }
-    createLoan(amount, collateral, publicKey?.toBase58() ?? "Demo Wallet");
-    setMessage("借款申请已创建，资金将等待放款后进入 Vault。");
+    createLoan(amount, collateral, publicKey?.toBase58() ?? "演示钱包");
+    setMessage("借款申请已创建，资金会等待贷方放款后进入受控资金库。");
   }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
       <section className="rounded-lg border border-line bg-panel p-5">
-        <h1 className="text-2xl font-semibold">Borrow</h1>
+        <h1 className="text-2xl font-semibold">借款申请</h1>
         <p className="mt-2 text-sm text-slate-400">
-          输入借款金额和抵押金额，系统会按抵押率、收益能力、策略风险、市场波动生成 ZK 风控评分。
+          输入借款金额和抵押金额，系统会根据公开抵押率以及 ZK 验证后的隐私风控因子生成风险评分。
         </p>
         <form className="mt-6 space-y-5" onSubmit={submit}>
           <label className="block">

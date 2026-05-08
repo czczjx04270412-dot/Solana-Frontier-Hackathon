@@ -1,17 +1,16 @@
 const rows = [
-  ["≥ 180%", "低风险", "90 - 100", "非常安全"],
-  ["160% - 180%", "较低风险", "75 - 90", "安全"],
-  ["140% - 160%", "中风险", "60 - 75", "可接受"],
-  ["120% - 140%", "较高风险", "40 - 60", "接近危险"],
-  ["100% - 120%", "高风险", "20 - 40", "容易清算"],
-  ["< 100%", "爆仓区", "0 - 20", "不允许借"]
+  ["≥ 180%", "低风险", "90 - 100", "抵押率高，策略稳定，波动小"],
+  ["150% - 180%", "中风险", "60 - 90", "抵押率一般，策略风险中等"],
+  ["130% - 150%", "高风险", "40 - 60", "抵押率偏低，适合更高利率"],
+  ["120% - 130%", "清算预警", "20 - 40", "接近强制清算线"],
+  ["< 120%", "清算区", "0 - 20", "停止策略并结束协议"]
 ];
 
 export default function CollateralRiskTable() {
   return (
     <section className="rounded-lg border border-line bg-panel p-5">
-      <p className="text-xs uppercase tracking-wide text-slate-500">Collateral Rule</p>
-      <h2 className="mt-2 text-xl font-semibold">抵押率风险表</h2>
+      <p className="text-xs uppercase tracking-wide text-slate-500">抵押率规则</p>
+      <h2 className="mt-2 text-xl font-semibold">公开抵押率风险表</h2>
       <div className="mt-5 overflow-hidden rounded-lg border border-line">
         <table className="w-full text-left text-sm">
           <thead className="bg-black/30 text-slate-400">

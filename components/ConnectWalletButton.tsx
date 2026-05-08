@@ -1,8 +1,9 @@
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 export default function ConnectWalletButton() {
-  const { publicKey } = useWallet();
+  const { publicKey, connected, disconnect } = useWallet();
+  const { setVisible } = useWalletModal();
   const address = publicKey?.toBase58();
 
   return (
@@ -12,7 +13,18 @@ export default function ConnectWalletButton() {
           {address.slice(0, 4)}...{address.slice(-4)}
         </span>
       ) : null}
-      <WalletMultiButton className="wallet-button" />
+      <button
+        onClick={() => {
+          if (connected) {
+            disconnect();
+            return;
+          }
+          setVisible(true);
+        }}
+        className="wallet-button"
+      >
+        {connected ? "断开钱包" : "连接钱包"}
+      </button>
     </div>
   );
 }

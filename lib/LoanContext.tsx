@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import type { Loan } from "./types";
-import { buildLoan, continueBorrowing, seedLoans, simulateYield, withdrawAfterRepayment } from "./mock";
+import { applyDemoScenario, buildLoan, continueBorrowing, seedLoans, simulateYield, withdrawAfterRepayment } from "./mock";
 
 type LoanContextValue = {
   loans: Loan[];
@@ -10,12 +10,41 @@ type LoanContextValue = {
   accrueYield: (days?: number) => void;
   continueActiveLoan: () => void;
   withdrawActiveLoan: () => void;
+  vaultBuySol: () => void;
+  vaultSellSol: () => void;
+  simulatePriceMove: () => void;
+  runRiskCheck: () => void;
+  resetDemo: () => void;
+  runDemoScenario: (scenario: "profit" | "loss" | "liquidation" | "exit") => void;
   setActiveLoanId: (id: string) => void;
 };
 
 const LoanContext = createContext<LoanContextValue | null>(null);
-const storageKey = "solana-defi-vault-loans-v5";
-const activeKey = "solana-defi-vault-active-loan-v5";
+const storageKey = "solana-defi-vault-loans-v9";
+const activeKey = "solana-defi-vault-active-loan-v9";
+
+function refreshVaultRisk(loan: Loan): Loan {
+  const vaultNav = loan.vaultUsdc + loan.vaultSol * loan.solPrice;
+  const unrealizedPnl = vaultNav - (loan.amount + loan.collateral);
+  const liquidationLine = loan.amount * 1.2;
+  const liquidated = vaultNav < liquidationLine;
+  const lenderProfitLocked = loan.lenderProfitLocked ?? loan.repaid ?? 0;
+
+  return {
+    ...loan,
+    vaultNav,
+    unrealizedPnl,
+    currentYield: unrealizedPnl,
+    lastPnl: unrealizedPnl,
+    lenderProfitLocked,
+    strategyReinvestPool: loan.strategyReinvestPool ?? loan.borrowerEarnings ?? 0,
+    repaid: lenderProfitLocked,
+    lenderEarnings: lenderProfitLocked,
+    currentCollateral: Math.max(0, vaultNav - loan.amount - lenderProfitLocked),
+    vaultStatus: liquidated ? "liquidated" : loan.vaultStatus === "pending" ? "pending" : "strategy",
+    lastEvent: liquidated ? "liquidated" : unrealizedPnl >= 0 ? "profit" : "loss"
+  };
+}
 
 export function LoanProvider({ children }: { children: ReactNode }) {
   const [loans, setLoans] = useState<Loan[]>(seedLoans);
@@ -71,6 +100,72 @@ export function LoanProvider({ children }: { children: ReactNode }) {
       if (!activeLoan) return;
       setLoans((current) =>
         current.map((loan) => (loan.id === activeLoan.id ? withdrawAfterRepayment(loan) : loan))
+      );
+    },
+    vaultBuySol() {
+      if (!activeLoan || activeLoan.vaultStatus === "liquidated") return;
+      setLoans((current) =>
+        current.map((loan) => {
+          if (loan.id !== activeLoan.id) return loan;
+          const spendUsdc = Math.min(200, loan.vaultUsdc);
+          const nextLoan = {
+            ...loan,
+            vaultUsdc: loan.vaultUsdc - spendUsdc,
+            vaultSol: loan.vaultSol + spendUsdc / loan.solPrice,
+            funded: true,
+            vaultStatus: "strategy" as const
+          };
+          return refreshVaultRisk(nextLoan);
+        })
+      );
+    },
+    vaultSellSol() {
+      if (!activeLoan || activeLoan.vaultStatus === "liquidated") return;
+      setLoans((current) =>
+        current.map((loan) => {
+          if (loan.id !== activeLoan.id) return loan;
+          const sellSol = Math.min(1, loan.vaultSol);
+          const nextLoan = {
+            ...loan,
+            vaultUsdc: loan.vaultUsdc + sellSol * loan.solPrice,
+            vaultSol: loan.vaultSol - sellSol,
+            funded: true,
+            vaultStatus: "strategy" as const
+          };
+          return refreshVaultRisk(nextLoan);
+        })
+      );
+    },
+    simulatePriceMove() {
+      if (!activeLoan || activeLoan.vaultStatus === "liquidated") return;
+      setLoans((current) =>
+        current.map((loan) => {
+          if (loan.id !== activeLoan.id) return loan;
+          const move = 1 + (Math.random() * 0.24 - 0.12);
+          const nextLoan = {
+            ...loan,
+            solPrice: Math.max(20, Math.round(loan.solPrice * move * 100) / 100)
+          };
+          return refreshVaultRisk(nextLoan);
+        })
+      );
+    },
+    runRiskCheck() {
+      if (!activeLoan) return;
+      setLoans((current) =>
+        current.map((loan) => (loan.id === activeLoan.id ? refreshVaultRisk(loan) : loan))
+      );
+    },
+    resetDemo() {
+      setLoans(seedLoans);
+      setActiveLoanIdState(seedLoans[0].id);
+      window.localStorage.removeItem(storageKey);
+      window.localStorage.removeItem(activeKey);
+    },
+    runDemoScenario(scenario) {
+      if (!activeLoan) return;
+      setLoans((current) =>
+        current.map((loan) => (loan.id === activeLoan.id ? applyDemoScenario(loan, scenario) : loan))
       );
     },
     setActiveLoanId(id) {
