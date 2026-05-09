@@ -14,7 +14,12 @@ body,
 
 body {
   margin: 0;
-  background: #0b0d12;
+  background: #08111f;
+  color: #f8fafc;
+}
+
+::selection {
+  background: rgba(45, 212, 191, 0.28);
 }
 
 .wallet-button {

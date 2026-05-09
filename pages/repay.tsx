@@ -12,18 +12,19 @@ export default function RepayPage() {
   return (
     <Layout>
       <div className="space-y-6">
-        <section className="rounded-lg border border-line bg-panel p-5">
+        <section className="rounded-md border border-line bg-panel p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h1 className="text-2xl font-semibold">收益归属与协议结算</h1>
+              <p className="text-xs uppercase tracking-wide text-aqua">SETTLEMENT</p>
+              <h1 className="mt-2 text-3xl font-semibold">收益归属与协议结算</h1>
               <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-400">
-                这个页面只看结算：贷方利润锁定了多少、目标利润还差多少、贷方退出能拿多少、
-                借方剩余抵押和复投池是多少。实时交易和净值走势放在 Vault 页面。
+                这个页面只看结算：贷方利润锁定了多少、目标利润还差多少、贷方退出能拿多少，以及借方剩余抵押和复投池是多少。
+                实时交易和净值走势放在 Vault 页面。
               </p>
             </div>
             <button
               onClick={resetDemo}
-              className="rounded-md border border-danger/60 px-4 py-3 font-semibold text-danger transition hover:bg-danger/10"
+              className="rounded border border-danger/60 px-4 py-3 font-semibold text-danger transition hover:bg-danger/10"
             >
               重置 Demo 数据
             </button>
@@ -31,10 +32,10 @@ export default function RepayPage() {
 
           {activeLoan?.vaultStatus === "repaid" ? (
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <button onClick={continueActiveLoan} className="rounded-md border border-aqua/60 px-4 py-3 font-semibold text-aqua">
+              <button onClick={continueActiveLoan} className="rounded border border-aqua/60 px-4 py-3 font-semibold text-aqua">
                 继续借款
               </button>
-              <button onClick={withdrawActiveLoan} className="rounded-md border border-lime/60 px-4 py-3 font-semibold text-lime">
+              <button onClick={withdrawActiveLoan} className="rounded border border-lime/60 px-4 py-3 font-semibold text-lime">
                 出金到钱包
               </button>
             </div>

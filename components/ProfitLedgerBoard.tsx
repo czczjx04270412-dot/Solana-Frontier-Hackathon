@@ -30,103 +30,54 @@ export default function ProfitLedgerBoard({ loan }: { loan: Loan | null }) {
   const progress = targetProfit > 0 ? Math.min(100, Math.round((lockedProfit / targetProfit) * 100)) : 0;
 
   return (
-    <section className="rounded-lg border border-line bg-panel p-6 shadow-glow">
+    <section className="rounded-md border border-line bg-panel p-6">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <p className="text-xs uppercase tracking-wide text-slate-500">PROFIT LEDGER</p>
           <h2 className="mt-2 text-3xl font-semibold">双方收益数据看板</h2>
           <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-400">
-            这里展示最终权益归属，不展示交易细节。所有收益仍留在 Vault 内部记账：
-            贷方利润锁定池不能再参与交易，策略复投池继续由借方使用。
+            这里展示最终权益归属。所有收益仍在 Vault 内部记账，贷方利润锁定池不再参与交易，策略复投池继续由借方使用。
           </p>
         </div>
-        <div className={exitReady ? "rounded-md bg-lime/10 px-5 py-3 text-lg font-semibold text-lime" : "rounded-md bg-aqua/10 px-5 py-3 text-lg font-semibold text-aqua"}>
+        <div className={exitReady ? "rounded bg-lime/10 px-5 py-3 text-lg font-semibold text-lime" : "rounded bg-aqua/10 px-5 py-3 text-lg font-semibold text-aqua"}>
           {exitReady ? "退出条件已满足" : "协议运行中"}
         </div>
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <div className="rounded-lg border border-line bg-ink p-5">
-          <p className="text-sm text-slate-500">贷方视角</p>
-          <div className="mt-5 space-y-4">
-            <div>
-              <p className="text-sm text-slate-400">本金保护线</p>
-              <p className="mt-1 text-3xl font-semibold text-amber">{money(principal)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">利润锁定池</p>
-              <p className="mt-1 text-3xl font-semibold text-lime">{money(lockedProfit)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">退出时可拿走</p>
-              <p className="mt-1 text-2xl font-semibold">{money(lenderExitAmount)}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-line bg-ink p-5">
-          <p className="text-sm text-slate-500">借方视角</p>
-          <div className="mt-5 space-y-4">
-            <div>
-              <p className="text-sm text-slate-400">策略复投池</p>
-              <p className="mt-1 text-3xl font-semibold text-aqua">{money(strategyPool)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">当前抵押余额</p>
-              <p className="mt-1 text-3xl font-semibold text-lime">{money(collateral)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">抵押已承担亏损</p>
-              <p className="mt-1 text-2xl font-semibold text-danger">{money(collateralLoss)}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-line bg-ink p-5">
-          <p className="text-sm text-slate-500">Vault 结算视角</p>
-          <div className="mt-5 space-y-4">
-            <div>
-              <p className="text-sm text-slate-400">Vault 实时净值</p>
-              <p className="mt-1 text-3xl font-semibold text-aqua">{money(vaultNav)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">累计策略盈亏</p>
-              <p className={`mt-1 text-3xl font-semibold ${tone(totalPnl)}`}>
-                {totalPnl >= 0 ? "+" : ""}{money(totalPnl)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">最新 1 天盈亏</p>
-              <p className={`mt-1 text-2xl font-semibold ${tone(latestPnl)}`}>
-                {latestPnl >= 0 ? "+" : ""}{money(latestPnl)}
-              </p>
-            </div>
-          </div>
-        </div>
+        <LedgerColumn
+          title="贷方视角"
+          items={[
+            ["本金保护线", money(principal), "text-amber"],
+            ["利润锁定池", money(lockedProfit), "text-lime"],
+            ["退出时可拿走", money(lenderExitAmount), "text-slate-100"]
+          ]}
+        />
+        <LedgerColumn
+          title="借方视角"
+          items={[
+            ["策略复投池", money(strategyPool), "text-aqua"],
+            ["当前抵押余额", money(collateral), "text-lime"],
+            ["抵押已承担亏损", money(collateralLoss), "text-danger"]
+          ]}
+        />
+        <LedgerColumn
+          title="Vault 结算视角"
+          items={[
+            ["Vault 实时净值", money(vaultNav), "text-aqua"],
+            ["累计策略盈亏", `${totalPnl >= 0 ? "+" : ""}${money(totalPnl)}`, tone(totalPnl)],
+            ["最新 1 天盈亏", `${latestPnl >= 0 ? "+" : ""}${money(latestPnl)}`, tone(latestPnl)]
+          ]}
+        />
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-3">
-        <div className="rounded-lg bg-black/20 p-4">
-          <p className="text-sm text-slate-500">日收益</p>
-          <p className={`mt-2 text-2xl font-semibold ${tone(latestPnl)}`}>
-            {latestPnl >= 0 ? "+" : ""}{money(latestPnl)}
-          </p>
-        </div>
-        <div className="rounded-lg bg-black/20 p-4">
-          <p className="text-sm text-slate-500">周收益</p>
-          <p className={`mt-2 text-2xl font-semibold ${tone(weeklyPnl)}`}>
-            {weeklyPnl >= 0 ? "+" : ""}{money(weeklyPnl)}
-          </p>
-        </div>
-        <div className="rounded-lg bg-black/20 p-4">
-          <p className="text-sm text-slate-500">月收益</p>
-          <p className={`mt-2 text-2xl font-semibold ${tone(monthlyPnl)}`}>
-            {monthlyPnl >= 0 ? "+" : ""}{money(monthlyPnl)}
-          </p>
-        </div>
+        <SmallMetric label="日收益" value={`${latestPnl >= 0 ? "+" : ""}${money(latestPnl)}`} tone={tone(latestPnl)} />
+        <SmallMetric label="周收益" value={`${weeklyPnl >= 0 ? "+" : ""}${money(weeklyPnl)}`} tone={tone(weeklyPnl)} />
+        <SmallMetric label="月收益" value={`${monthlyPnl >= 0 ? "+" : ""}${money(monthlyPnl)}`} tone={tone(monthlyPnl)} />
       </div>
 
-      <div className="mt-5 rounded-lg border border-line bg-black/20 p-4">
+      <div className="mt-5 rounded-md border border-line bg-ink p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm text-slate-400">贷方目标利润进度</p>
@@ -142,9 +93,34 @@ export default function ProfitLedgerBoard({ loan }: { loan: Loan | null }) {
           <div className="h-full rounded-full bg-aqua transition-all" style={{ width: `${progress}%` }} />
         </div>
         <p className="mt-3 text-sm leading-6 text-slate-400">
-          退出条件：贷方利润锁定池达到目标利润，并且 Vault 净值足够覆盖贷方本金 + 已锁定利润。
+          退出条件：贷方利润锁定池达到目标利润，并且 Vault 净值足够覆盖贷方本金和已锁定利润。
         </p>
       </div>
     </section>
+  );
+}
+
+function LedgerColumn({ title, items }: { title: string; items: Array<[string, string, string]> }) {
+  return (
+    <div className="rounded-md border border-line bg-ink p-5">
+      <p className="text-sm text-slate-500">{title}</p>
+      <div className="mt-5 space-y-4">
+        {items.map(([label, value, className]) => (
+          <div key={label}>
+            <p className="text-sm text-slate-400">{label}</p>
+            <p className={`mt-1 text-2xl font-semibold ${className}`}>{value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SmallMetric({ label, value, tone: className }: { label: string; value: string; tone: string }) {
+  return (
+    <div className="rounded-md bg-ink p-4">
+      <p className="text-sm text-slate-500">{label}</p>
+      <p className={`mt-2 text-2xl font-semibold ${className}`}>{value}</p>
+    </div>
   );
 }

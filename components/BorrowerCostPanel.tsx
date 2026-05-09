@@ -10,39 +10,29 @@ export default function BorrowerCostPanel({ loan }: { loan: Loan | null }) {
   const remainingProfit = Math.max(0, targetProfit - lockedProfit);
 
   return (
-    <section className="rounded-lg border border-line bg-panel p-5">
-      <p className="text-xs uppercase tracking-wide text-slate-500">借方视角</p>
+    <section className="rounded-md border border-line bg-panel p-5">
+      <p className="text-xs uppercase tracking-wide text-slate-500">BORROWER COST</p>
       <h2 className="mt-2 text-xl font-semibold">成本和清算风险</h2>
       <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">推荐目标收益</p>
-          <p className="mt-1 font-semibold text-amber">{loan?.expectedYield ?? "暂无"}</p>
-        </div>
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">贷方目标利润</p>
-          <p className="mt-1 font-semibold">{targetProfit.toFixed(2)} USDC</p>
-        </div>
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">已锁定利润</p>
-          <p className="mt-1 font-semibold text-aqua">{lockedProfit.toFixed(2)} USDC</p>
-        </div>
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">剩余目标利润</p>
-          <p className="mt-1 font-semibold">{remainingProfit.toFixed(2)} USDC</p>
-        </div>
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">当前抵押率</p>
-          <p className={ratio < 120 ? "mt-1 font-semibold text-danger" : "mt-1 font-semibold text-lime"}>{ratio}%</p>
-        </div>
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">距离清算缓冲</p>
-          <p className="mt-1 font-semibold text-amber">{liquidationBuffer.toFixed(2)} USDC</p>
-        </div>
+        <Item label="推荐目标收益" value={loan?.expectedYield ?? "暂无"} tone="text-amber" />
+        <Item label="贷方目标利润" value={`${targetProfit.toFixed(2)} USDC`} />
+        <Item label="已锁定利润" value={`${lockedProfit.toFixed(2)} USDC`} tone="text-aqua" />
+        <Item label="剩余目标利润" value={`${remainingProfit.toFixed(2)} USDC`} />
+        <Item label="当前抵押率" value={`${ratio}%`} tone={ratio < 120 ? "text-danger" : "text-lime"} />
+        <Item label="距离清算缓冲" value={`${liquidationBuffer.toFixed(2)} USDC`} tone="text-amber" />
       </div>
-      <p className="mt-4 rounded-md border border-line bg-black/20 p-3 text-sm leading-6 text-slate-300">
-        借方重点看目标利润、复投收益和清算风险。盈利时只有 5% 锁给贷方，95% 继续留在策略复投池；
-        亏损时复投池先承担，复投池不足才影响借方抵押。
+      <p className="mt-4 rounded-md border border-line bg-ink p-3 text-sm leading-6 text-slate-300">
+        借方重点看目标利润、复投收益和清算风险。盈利时只有 5% 锁给贷方，95% 继续留在策略复投池；亏损时复投池先承担，不足部分才影响借方抵押。
       </p>
     </section>
+  );
+}
+
+function Item({ label, value, tone = "text-slate-100" }: { label: string; value: string; tone?: string }) {
+  return (
+    <div className="rounded-md bg-ink p-3">
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className={`mt-1 font-semibold ${tone}`}>{value}</p>
+    </div>
   );
 }

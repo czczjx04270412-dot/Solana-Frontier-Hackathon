@@ -70,10 +70,10 @@ export function calculateRisk(amount: number, collateral: number): RiskResult {
 
 function getCollateralBand(ratio: number): RiskBand {
   if (ratio >= 180) return { level: "very-low", score: 95, label: "低风险", explanation: "抵押率达到 180% 以上，安全垫充足。" };
-  if (ratio >= 150) return { level: "medium", score: 72, label: "中风险", explanation: "抵押率位于 150%-180%，策略风险中等。" };
+  if (ratio >= 150) return { level: "medium", score: 72, label: "中风险", explanation: "抵押率位于 150%-180%，策略风险中等，需要持续监控。" };
   if (ratio >= 130) return { level: "high", score: 48, label: "高风险", explanation: "抵押率位于 130%-150%，需要更高目标收益补偿风险。" };
   if (ratio >= 120) return { level: "high", score: 35, label: "高风险", explanation: "抵押率接近清算线，借方抵押承担主要亏损风险。" };
-  return { level: "liquidation", score: 10, label: "清算区", explanation: "抵押率低于 120%，策略应停止。" };
+  return { level: "liquidation", score: 10, label: "清算区", explanation: "抵押率低于 120%，不允许进入策略。" };
 }
 
 function getYieldAbilityScore(amount: number, ratio: number) {
@@ -121,31 +121,31 @@ export function getLenderAprRate(level: RiskLevel) {
 }
 
 function getYieldExplanation(score: number) {
-  if (score >= 80) return "收益能力较强，可以更快累积贷方利润锁定池。";
+  if (score >= 80) return "收益能力较强，更容易累积贷方利润锁定池。";
   if (score >= 60) return "收益能力中等，需要持续观察策略表现。";
   return "收益能力偏弱，更依赖抵押安全垫。";
 }
 
 function getStrategyExplanation(score: number) {
   if (score >= 80) return "策略较稳定，适合低风险融资。";
-  if (score >= 60) return "策略风险中等。";
-  return "策略波动较高，需要严格资金库控制。";
+  if (score >= 60) return "策略风险中等，需要设置清晰的风控阈值。";
+  return "策略波动较高，需要严格的 Vault 交易限制。";
 }
 
 function getMarketExplanation(score: number) {
-  if (score >= 80) return "市场波动较小。";
-  if (score >= 60) return "市场波动正常。";
+  if (score >= 80) return "市场波动较小，清算风险较低。";
+  if (score >= 60) return "市场波动正常，但仍需要实时监控净值。";
   return "市场波动可能快速压缩抵押安全垫。";
 }
 
 function buildAiReason(ratio: number, label: string, yieldScore: number, strategyScore: number, marketScore: number, approved: boolean) {
-  const decision = approved ? "该申请可以进入放款列表。" : "该申请不应继续。";
+  const decision = approved ? "该申请可以进入贷方市场，但仍需后台审核确认。" : "该申请不建议继续，需要提高抵押或降低借款金额。";
   return `AI 风控评估：${label}。抵押率为 ${ratio}%，收益能力 ${yieldScore}/100，策略安全性 ${strategyScore}/100，市场稳定性 ${marketScore}/100。${decision}`;
 }
 
 function buildLenderReason(ratio: number, label: string, yieldScore: number, strategyScore: number, approved: boolean) {
-  const decision = approved ? "该贷款可以按风险等级设置目标收益。" : "该贷款不建议放款。";
-  return `AI 风控评估：${label}。公开抵押率为 ${ratio}%，贷方可据此定价。ZK 用于证明收益能力（${yieldScore}/100）、策略暴露（${strategyScore}/100）、违约历史和资产来源检查通过。${decision}`;
+  const decision = approved ? "贷方可在推荐收益区间内考虑放款。" : "该贷款不建议放款。";
+  return `AI 风险解释：${label}。公开抵押率为 ${ratio}%，收益能力 ${yieldScore}/100，策略安全性 ${strategyScore}/100。ZK 用于证明隐私风控因子已通过，但不会向贷方暴露原始数据。${decision}`;
 }
 
 export function buildLoan(amount: number, collateral: number, borrower: string): Loan {
@@ -285,7 +285,20 @@ function applyLoss(
 
 export function continueBorrowing(loan: Loan): Loan {
   if (loan.vaultStatus !== "repaid") return loan;
-  return { ...loan, repaid: 0, lenderProfitLocked: 0, strategyReinvestPool: 0, currentYield: 0, borrowerEarnings: 0, lenderEarnings: 0, excessProfitToBorrower: 0, lastPnl: 0, lastEvent: "none", pnlHistory: [], vaultStatus: "strategy" };
+  return {
+    ...loan,
+    repaid: 0,
+    lenderProfitLocked: 0,
+    strategyReinvestPool: 0,
+    currentYield: 0,
+    borrowerEarnings: 0,
+    lenderEarnings: 0,
+    excessProfitToBorrower: 0,
+    lastPnl: 0,
+    lastEvent: "none",
+    pnlHistory: [],
+    vaultStatus: "strategy"
+  };
 }
 
 export function withdrawAfterRepayment(loan: Loan): Loan {

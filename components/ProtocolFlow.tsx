@@ -1,22 +1,30 @@
 const steps = [
-  { title: "借款申请", note: "借方输入借款金额和抵押金额" },
-  { title: "AI 风控", note: "后端规则算分，AI 负责解释" },
-  { title: "ZK 验证", note: "证明隐私因子通过，不暴露原始数据" },
-  { title: "贷方放款", note: "贷方根据风险和利率决定是否放款" },
-  { title: "进入资金库", note: "资金受控使用，不能直接进借方钱包" },
-  { title: "结算或清算", note: "利润达标退出，风险过高触发清算" }
+  { title: "借方申请", note: "提交借款金额、抵押金额和钱包地址" },
+  { title: "后台准入", note: "AI/ZK 风控通过后才进入贷方市场" },
+  { title: "贷方放款", note: "贷方根据风险等级和目标收益决定是否参与" },
+  { title: "放款复核", note: "后台确认资金进入受控 Vault" },
+  { title: "策略运行", note: "借方只能执行白名单交易，系统实时监控净值" },
+  { title: "结算退出", note: "利润达标退出，跌破清算线则停止策略" }
 ];
 
 export default function ProtocolFlow() {
   return (
-    <section className="rounded-lg border border-line bg-panel p-5">
-      <p className="text-xs uppercase tracking-wide text-slate-500">协议流程</p>
-      <h2 className="mt-2 text-xl font-semibold">融资闭环</h2>
+    <section className="rounded-md border border-line bg-panel p-5">
+      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-slate-500">PROTOCOL FLOW</p>
+          <h2 className="mt-2 text-xl font-semibold">融资流程闭环</h2>
+        </div>
+        <p className="max-w-xl text-sm leading-6 text-slate-500">
+          每一步都对应一个页面或后台动作，方便评委快速理解资金为什么不会直接流入借方个人钱包。
+        </p>
+      </div>
+
       <div className="mt-5 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
         {steps.map((step, index) => (
-          <div key={step.title} className="relative rounded-lg border border-line bg-black/20 p-4">
-            <span className="text-xs text-aqua">步骤 {index + 1}</span>
-            <p className="mt-2 font-semibold text-slate-100">{step.title}</p>
+          <div key={step.title} className="relative rounded-md border border-line bg-ink p-4">
+            <span className="text-xs font-semibold text-aqua">0{index + 1}</span>
+            <p className="mt-3 font-semibold text-slate-100">{step.title}</p>
             <p className="mt-2 text-sm leading-5 text-slate-500">{step.note}</p>
           </div>
         ))}

@@ -5,7 +5,7 @@ function statusLabel(loan: Loan | null) {
   if (loan.vaultStatus === "repaid") return "利润达标，协议可结算";
   if (loan.vaultStatus === "withdrawn") return "已关闭，双方可出金";
   if (loan.vaultStatus === "liquidated") return "已清算，策略停止";
-  if (loan.vaultStatus === "loss") return "亏损处理中，先扣复投池和抵押";
+  if (loan.vaultStatus === "loss") return "亏损处理中";
   return "运行中，策略执行中";
 }
 
@@ -24,64 +24,42 @@ export default function SettlementSummary({ loan }: { loan: Loan | null }) {
   const exitReady = lenderProfitLocked >= targetProfit && vaultNav >= principal + lenderProfitLocked;
 
   return (
-    <section className="rounded-lg border border-line bg-panel p-5">
+    <section className="rounded-md border border-line bg-panel p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">结算摘要</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">SETTLEMENT SUMMARY</p>
           <h2 className="mt-2 text-xl font-semibold">最终盈亏情况</h2>
         </div>
-        <span className="rounded-md bg-aqua/10 px-3 py-2 text-sm text-aqua">
-          {statusLabel(loan)}
-        </span>
+        <span className="rounded bg-aqua/10 px-3 py-2 text-sm text-aqua">{statusLabel(loan)}</span>
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">最新盈亏</p>
-          <p className={latestPnl < 0 ? "mt-1 font-semibold text-danger" : "mt-1 font-semibold text-lime"}>
-            {latestPnl >= 0 ? "+" : ""}{latestPnl.toFixed(2)} USDC
-          </p>
-        </div>
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">累计策略盈亏</p>
-          <p className={totalPnl < 0 ? "mt-1 font-semibold text-danger" : "mt-1 font-semibold text-lime"}>
-            {totalPnl >= 0 ? "+" : ""}{totalPnl.toFixed(2)} USDC
-          </p>
-        </div>
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">贷方利润锁定池</p>
-          <p className="mt-1 font-semibold text-lime">{lenderProfitLocked.toFixed(2)} USDC</p>
-        </div>
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">还差目标利润</p>
-          <p className="mt-1 font-semibold">{remainingProfit.toFixed(2)} USDC</p>
-        </div>
+        <Item label="最新盈亏" value={`${latestPnl >= 0 ? "+" : ""}${latestPnl.toFixed(2)} USDC`} tone={latestPnl < 0 ? "text-danger" : "text-lime"} />
+        <Item label="累计策略盈亏" value={`${totalPnl >= 0 ? "+" : ""}${totalPnl.toFixed(2)} USDC`} tone={totalPnl < 0 ? "text-danger" : "text-lime"} />
+        <Item label="贷方利润锁定池" value={`${lenderProfitLocked.toFixed(2)} USDC`} tone="text-lime" />
+        <Item label="还差目标利润" value={`${remainingProfit.toFixed(2)} USDC`} />
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">贷方本金保护线</p>
-          <p className="mt-1 font-semibold text-amber">{principal.toFixed(2)} USDC</p>
-        </div>
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">策略复投池</p>
-          <p className="mt-1 font-semibold text-aqua">{strategyReinvestPool.toFixed(2)} USDC</p>
-        </div>
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">Vault 实时净值</p>
-          <p className="mt-1 font-semibold">{vaultNav.toFixed(2)} USDC</p>
-        </div>
-        <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">抵押承担亏损</p>
-          <p className="mt-1 font-semibold text-danger">{lossAbsorbed.toFixed(2)} USDC</p>
-        </div>
+        <Item label="贷方本金保护线" value={`${principal.toFixed(2)} USDC`} tone="text-amber" />
+        <Item label="策略复投池" value={`${strategyReinvestPool.toFixed(2)} USDC`} tone="text-aqua" />
+        <Item label="Vault 实时净值" value={`${vaultNav.toFixed(2)} USDC`} />
+        <Item label="抵押承担亏损" value={`${lossAbsorbed.toFixed(2)} USDC`} tone="text-danger" />
       </div>
 
-      <p className="mt-4 rounded-md border border-line bg-black/20 p-3 text-sm leading-6 text-slate-300">
-        盈利时，5% 进入贷方利润锁定池，95% 进入策略复投池。贷方利润锁定池不能再被借方拿去交易；
-        亏损时先扣策略复投池，再扣借方抵押，不扣贷方利润锁定池，也不扣贷方本金保护线。
+      <p className="mt-4 rounded-md border border-line bg-ink p-3 text-sm leading-6 text-slate-300">
+        盈利时，5% 进入贷方利润锁定池，95% 进入策略复投池。亏损时先扣策略复投池，再扣借方抵押，不扣贷方利润锁定池，也不扣贷方本金保护线。
         {exitReady ? " 当前已满足退出条件：贷方目标利润已锁定，Vault 净值足够覆盖本金和锁定利润。" : ""}
       </p>
     </section>
+  );
+}
+
+function Item({ label, value, tone = "text-slate-100" }: { label: string; value: string; tone?: string }) {
+  return (
+    <div className="rounded-md bg-ink p-3">
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className={`mt-1 font-semibold ${tone}`}>{value}</p>
+    </div>
   );
 }

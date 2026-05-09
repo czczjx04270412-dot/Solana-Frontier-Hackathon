@@ -9,16 +9,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#0b0d12",
-        panel: "#111721",
-        line: "#273244",
-        aqua: "#28d7c4",
-        lime: "#a6e86f",
-        amber: "#f2c35f",
-        danger: "#ff6b7a"
+        ink: "#08111f",
+        panel: "#101827",
+        line: "#243247",
+        aqua: "#2dd4bf",
+        lime: "#84cc16",
+        amber: "#f59e0b",
+        danger: "#fb7185"
       },
       boxShadow: {
-        glow: "0 18px 70px rgba(40, 215, 196, 0.16)"
+        glow: "0 16px 50px rgba(15, 23, 42, 0.32)"
       }
     }
   },
