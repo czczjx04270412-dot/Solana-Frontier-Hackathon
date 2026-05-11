@@ -10,54 +10,54 @@ function buildNodes(loan: Loan | null) {
 
   if (!loan || loan.lastEvent === "none") {
     return [
-      { label: "借方申请", note: "抵押进入 Vault，贷方本金进入受控资金库" },
-      { label: "策略执行", note: "借方只能使用白名单资产和受控交易面板" },
-      { label: "利润分账", note: "盈利 5% 锁给贷方，95% 留在策略复投池" },
-      { label: "风险保护", note: "亏损先扣复投池，再扣借方抵押" }
+      { label: "Loan Application", note: "Collateral enters Vault, lender principal enters controlled fund" },
+      { label: "Strategy Execution", note: "Borrower can only use whitelisted assets and controlled trading panel" },
+      { label: "Profit Split", note: "5% profit locked for lender, 95% stays in strategy reinvest pool" },
+      { label: "Risk Protection", note: "Loss deducted from reinvest pool first, then borrower collateral" }
     ];
   }
 
   if (loan.lastEvent === "repaid") {
     return [
-      { label: "目标利润达标", note: `贷方已锁定 ${locked.toFixed(2)}U 利润` },
-      { label: "本金可退出", note: `${amount.toFixed(2)}U 本金和锁定利润可结算` },
-      { label: "控制权释放", note: "贷方退出后不再控制共同资金库" },
-      { label: "借方出金", note: "剩余抵押和复投池归借方处理" }
+      { label: "Profit Target Reached", note: `Lender has locked ${locked.toFixed(2)}U profit` },
+      { label: "Principal Ready to Exit", note: `${amount.toFixed(2)}U principal + locked profit can settle` },
+      { label: "Control Released", note: "Lender no longer controls joint vault after exit" },
+      { label: "Borrower Withdraws", note: "Remaining collateral and reinvest pool belong to borrower" }
     ];
   }
 
   if (loan.lastEvent === "withdrawn") {
     return [
-      { label: "协议关闭", note: "双方已完成结算" },
-      { label: "贷方退出", note: "贷方拿回本金和锁定利润" },
-      { label: "Vault 解锁", note: "共同账户不再受贷方约束" },
-      { label: "借方出金", note: "借方可以把剩余资金转回个人钱包" }
+      { label: "Protocol Closed", note: "Both parties have completed settlement" },
+      { label: "Lender Exit", note: "Lender recovers principal and locked profit" },
+      { label: "Vault Unlocked", note: "Joint account no longer bound by lender" },
+      { label: "Borrower Withdraws", note: "Borrower can transfer remaining funds to personal wallet" }
     ];
   }
 
   if (loan.lastEvent === "profit") {
     return [
-      { label: `盈利 +${pnl.toFixed(2)}U`, note: "按 Vault 净值百分比模拟当日收益" },
-      { label: "贷方锁定 5%", note: `${(pnl * 0.05).toFixed(2)}U 进入贷方利润锁定池` },
-      { label: "策略复投 95%", note: `${(pnl * 0.95).toFixed(2)}U 留给借方继续交易` },
-      { label: "等待退出条件", note: "锁定利润达到目标后协议可结算" }
+      { label: `Profit +${pnl.toFixed(2)}U`, note: "Simulated daily yield as % of Vault NAV" },
+      { label: "Lender Locks 5%", note: `${(pnl * 0.05).toFixed(2)}U enters lender profit lock pool` },
+      { label: "Reinvest 95%", note: `${(pnl * 0.95).toFixed(2)}U stays for borrower to continue trading` },
+      { label: "Awaiting Exit Condition", note: "Protocol settles when locked profit reaches target" }
     ];
   }
 
   if (loan.lastEvent === "liquidated") {
     return [
-      { label: `亏损 ${pnl.toFixed(2)}U`, note: "复投池不足，亏损继续侵蚀借方抵押" },
-      { label: `剩余抵押 ${collateral.toFixed(2)}U`, note: `当前抵押率降到 ${ratio}%` },
-      { label: "强制清算", note: "触发清算线，策略停止" },
-      { label: "贷方保护", note: `${amount.toFixed(2)}U 本金优先保护` }
+      { label: `Loss ${pnl.toFixed(2)}U`, note: "Reinvest pool depleted, loss eroding borrower collateral" },
+      { label: `Remaining Collateral ${collateral.toFixed(2)}U`, note: `Current ratio dropped to ${ratio}%` },
+      { label: "Forced Liquidation", note: "Liquidation line triggered, strategy stopped" },
+      { label: "Lender Protected", note: `${amount.toFixed(2)}U principal prioritized` }
     ];
   }
 
   return [
-    { label: `亏损 ${pnl.toFixed(2)}U`, note: "亏损先扣策略复投池" },
-    { label: `复投池 ${strategyPool.toFixed(2)}U`, note: "复投池不够时再扣借方抵押" },
-    { label: `剩余抵押 ${collateral.toFixed(2)}U`, note: `当前抵押率 ${ratio}%` },
-    { label: "继续监控", note: "抵押率不低于清算线时策略继续运行" }
+    { label: `Loss ${pnl.toFixed(2)}U`, note: "Loss deducted from strategy reinvest pool first" },
+    { label: `Reinvest Pool ${strategyPool.toFixed(2)}U`, note: "Borrower collateral deducted when pool is insufficient" },
+    { label: `Remaining Collateral ${collateral.toFixed(2)}U`, note: `Current ratio ${ratio}%` },
+    { label: "Continue Monitoring", note: "Strategy continues while ratio is above liquidation line" }
   ];
 }
 
@@ -68,13 +68,13 @@ function statusClass(status: Loan["vaultStatus"] | "pending") {
 }
 
 const statusText: Record<Loan["vaultStatus"] | "pending", string> = {
-  pending: "等待放款",
-  funded: "已放款",
-  strategy: "策略运行中",
-  loss: "亏损处理中",
-  liquidated: "已清算",
-  repaid: "利润达标",
-  withdrawn: "已出金"
+  pending: "Awaiting Funding",
+  funded: "Funded",
+  strategy: "Strategy Running",
+  loss: "Processing Loss",
+  liquidated: "Liquidated",
+  repaid: "Profit Target Reached",
+  withdrawn: "Withdrawn"
 };
 
 export default function VaultFlowDiagram({ loan }: { loan: Loan | null }) {
@@ -85,8 +85,8 @@ export default function VaultFlowDiagram({ loan }: { loan: Loan | null }) {
     <section className="rounded-lg border border-line bg-panel p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">资金库流程</p>
-          <h2 className="mt-2 text-xl font-semibold">动态收益与风险瀑布</h2>
+          <p className="text-xs uppercase tracking-wide text-slate-500">Vault Flow</p>
+          <h2 className="mt-2 text-xl font-semibold">Dynamic Yield & Risk Waterfall</h2>
         </div>
         <span className={`rounded-md px-3 py-2 text-sm ${statusClass(status)}`}>
           {statusText[status]}

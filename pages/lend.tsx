@@ -10,13 +10,13 @@ export default function LendPage() {
     <Layout>
       <section className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">贷方视角</h1>
+          <h1 className="text-2xl font-semibold">Lender View</h1>
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            贷方重点查看本金保护、目标收益、风险等级、AI/ZK 风控解释，以及资金是否进入受控 Vault。
+            Lender focuses on principal protection, target yield, risk level, AI/ZK risk explanations, and whether funds enter the controlled Vault.
           </p>
         </div>
         <span className="rounded-md border border-line bg-panel px-3 py-2 text-sm text-slate-300">
-          {loans.length} 个借款申请
+          {loans.length} Loan Applications
         </span>
       </section>
 

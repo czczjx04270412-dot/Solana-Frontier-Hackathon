@@ -15,27 +15,27 @@ export default function RepayPage() {
         <section className="rounded-lg border border-line bg-panel p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h1 className="text-2xl font-semibold">收益归属与协议结算</h1>
+              <h1 className="text-2xl font-semibold">Profit Attribution & Settlement</h1>
               <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-400">
-                这个页面只看结算：贷方利润锁定了多少、目标利润还差多少、贷方退出能拿多少、
-                借方剩余抵押和复投池是多少。实时交易和净值走势放在 Vault 页面。
+                This page focuses on settlement: how much lender profit is locked, how much remains to reach target, lender exit amount,
+                and borrower remaining collateral and reinvest pool. Live trading and NAV trends are on the Vault page.
               </p>
             </div>
             <button
               onClick={resetDemo}
               className="rounded-md border border-danger/60 px-4 py-3 font-semibold text-danger transition hover:bg-danger/10"
             >
-              重置 Demo 数据
+              Reset Demo Data
             </button>
           </div>
 
           {activeLoan?.vaultStatus === "repaid" ? (
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <button onClick={continueActiveLoan} className="rounded-md border border-aqua/60 px-4 py-3 font-semibold text-aqua">
-                继续借款
+                Continue Loan
               </button>
               <button onClick={withdrawActiveLoan} className="rounded-md border border-lime/60 px-4 py-3 font-semibold text-lime">
-                出金到钱包
+                Withdraw to Wallet
               </button>
             </div>
           ) : null}

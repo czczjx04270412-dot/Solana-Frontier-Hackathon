@@ -13,7 +13,7 @@ export default function RiskPanel({ risk }: { risk: RiskResult | null }) {
   if (!risk) {
     return (
       <section className="rounded-lg border border-dashed border-line bg-panel/70 p-5">
-        <p className="text-sm text-slate-400">提交借款申请后会生成风险评分。</p>
+        <p className="text-sm text-slate-400">Risk score will be generated after submitting a loan application.</p>
       </section>
     );
   }
@@ -22,7 +22,7 @@ export default function RiskPanel({ risk }: { risk: RiskResult | null }) {
     <section className="rounded-lg border border-line bg-panel p-5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">公开风险摘要</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">Public Risk Summary</p>
           <p className="mt-2 text-4xl font-semibold text-slate-50">{risk.creditScore}</p>
         </div>
         <span className={`rounded-md border px-3 py-2 text-sm ${riskStyle[risk.riskLevel]}`}>
@@ -31,13 +31,13 @@ export default function RiskPanel({ risk }: { risk: RiskResult | null }) {
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">公开抵押率</p>
+          <p className="text-xs text-slate-500">Collateral Ratio</p>
           <p className="mt-1 font-semibold">{risk.collateralRatio}%</p>
         </div>
         <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">风控结论</p>
+          <p className="text-xs text-slate-500">Risk Decision</p>
           <p className={risk.approved ? "mt-1 font-semibold text-lime" : "mt-1 font-semibold text-danger"}>
-            {risk.approved ? "通过" : "拒绝"}
+            {risk.approved ? "Approved" : "Rejected"}
           </p>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default function RiskPanel({ risk }: { risk: RiskResult | null }) {
         {risk.lenderVisibleReason}
       </p>
       <p className="mt-3 text-xs leading-5 text-slate-500">
-        抵押率是公开信息，ZK 不是用来隐藏抵押率，而是用来证明收益能力、策略暴露、历史违约、资产来源和市场模型等隐私数据已通过验证。
+        Collateral ratio is public information. ZK is not used to hide collateral ratio, but to prove that yield ability, strategy exposure, default history, asset source, and market model data have been verified without revealing details.
       </p>
     </section>
   );

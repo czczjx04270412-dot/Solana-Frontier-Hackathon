@@ -23,7 +23,7 @@ export default function ConnectWalletButton() {
         }}
         className="wallet-button"
       >
-        {connected ? "断开钱包" : "连接钱包"}
+        {connected ? "Disconnect" : "Connect Wallet"}
       </button>
     </div>
   );

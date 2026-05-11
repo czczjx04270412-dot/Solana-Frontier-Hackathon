@@ -3,36 +3,36 @@ import { calculateRisk as localCalculateRisk } from "./mock";
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
 
-const SYSTEM_PROMPT = `你是一个 DeFi 借贷协议的 AI 风控引擎。你需要根据借款人的借款金额和抵押金额，输出结构化的风控评分结果。
+const SYSTEM_PROMPT = `You are an AI risk assessment engine for a DeFi lending protocol. You need to evaluate the borrower's loan amount and collateral amount, and output a structured risk scoring result.
 
-评分规则：
-1. 抵押率 = 抵押金额 / 借款金额 * 100%
-2. 四个风控因子（每个 0-100 分）：
-   - 抵押率因子（权重 40%）：≥180% 得 90-95 分，150-180% 得 70-80 分，130-150% 得 45-55 分，120-130% 得 30-40 分，<120% 得 10-20 分
-   - 收益能力因子（权重 30%）：基于抵押率和借款金额评估。抵押率越高、金额越小，分数越高
-   - 策略风险因子（权重 20%）：抵押率越高策略越安全，分数越高
-   - 市场波动因子（权重 10%）：评估市场条件对抵押物的影响
-3. 信用总分 = 各因子加权求和
-4. 审批条件：抵押率 ≥ 120% 且 信用总分 ≥ 40
-5. 风险等级：very-low（≥180%）, low, medium（150-180%）, elevated, high（120-150%）, liquidation（<120%）
+Scoring Rules:
+1. Collateral Ratio = Collateral Amount / Loan Amount * 100%
+2. Four risk factors (each scored 0-100):
+   - Collateral Ratio Factor (weight 40%): >=180% scores 90-95, 150-180% scores 70-80, 130-150% scores 45-55, 120-130% scores 30-40, <120% scores 10-20
+   - Yield Ability Factor (weight 30%): Based on collateral ratio and loan amount. Higher ratio and smaller amount scores higher
+   - Strategy Risk Factor (weight 20%): Higher collateral ratio means safer strategy, higher score
+   - Market Volatility Factor (weight 10%): Assess market conditions impact on collateral
+3. Credit Score = Weighted sum of all factors
+4. Approval Condition: Collateral Ratio >= 120% AND Credit Score >= 40
+5. Risk Level: very-low (>=180%), low, medium (150-180%), elevated, high (120-150%), liquidation (<120%)
 
-你必须严格按照以下 JSON 格式返回，不要返回任何其他内容：
+You MUST return ONLY the following JSON format, no other content:
 {
   "creditScore": number,
   "collateralRatio": number,
   "riskLevel": "very-low" | "low" | "medium" | "elevated" | "high" | "liquidation",
-  "riskLabel": "低风险" | "中风险" | "高风险" | "清算区",
+  "riskLabel": "Low Risk" | "Medium Risk" | "High Risk" | "Liquidation Zone",
   "riskExplanation": "string",
   "defaultProbability": "string like 3% or 12%",
   "approved": boolean,
   "factors": {
-    "collateralRatio": { "label": "抵押率", "score": number, "weight": 40, "explanation": "string", "private": false },
-    "yieldAbility": { "label": "收益能力", "score": number, "weight": 30, "explanation": "string", "private": true },
-    "strategyRisk": { "label": "策略风险", "score": number, "weight": 20, "explanation": "string", "private": true },
-    "marketVolatility": { "label": "市场波动", "score": number, "weight": 10, "explanation": "string", "private": true }
+    "collateralRatio": { "label": "Collateral Ratio", "score": number, "weight": 40, "explanation": "string", "private": false },
+    "yieldAbility": { "label": "Yield Ability", "score": number, "weight": 30, "explanation": "string", "private": true },
+    "strategyRisk": { "label": "Strategy Risk", "score": number, "weight": 20, "explanation": "string", "private": true },
+    "marketVolatility": { "label": "Market Volatility", "score": number, "weight": 10, "explanation": "string", "private": true }
   },
-  "aiReason": "完整的AI风控评估说明，包含所有因子数据",
-  "lenderVisibleReason": "对贷方展示的说明，隐私因子只显示验证结果不显示具体分数"
+  "aiReason": "Complete AI risk assessment explanation with all factor data",
+  "lenderVisibleReason": "Lender-visible explanation, private factors show verification result only without specific scores"
 }`;
 
 export async function aiCalculateRisk(
@@ -45,12 +45,12 @@ export async function aiCalculateRisk(
     return localCalculateRisk(amount, collateral);
   }
 
-  const userPrompt = `请对以下借款申请进行风控评分：
-- 借款金额：${amount} USDC
-- 抵押金额：${collateral} USDC
-- 抵押率：${Math.round((collateral / Math.max(amount, 1)) * 100)}%
+  const userPrompt = `Please evaluate the following loan application:
+- Loan Amount: ${amount} USDC
+- Collateral Amount: ${collateral} USDC
+- Collateral Ratio: ${Math.round((collateral / Math.max(amount, 1)) * 100)}%
 
-请严格按照要求的 JSON 格式返回评分结果。`;
+Please return the scoring result strictly in the required JSON format.`;
 
   try {
     const response = await fetch(DEEPSEEK_API_URL, {

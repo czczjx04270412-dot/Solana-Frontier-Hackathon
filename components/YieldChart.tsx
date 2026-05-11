@@ -3,7 +3,7 @@ import type { Loan } from "@/lib/types";
 import { buildLoan, createYieldSeries } from "@/lib/mock";
 
 const fallbackLoan: Loan = {
-  ...buildLoan(500, 920, "演示钱包"),
+  ...buildLoan(500, 920, "Demo Wallet"),
   id: "empty",
   funded: true,
   vaultStatus: "strategy",
@@ -29,26 +29,26 @@ export default function YieldChart({ loan }: { loan: Loan | null }) {
 
   return (
     <section className="rounded-lg border border-line bg-panel p-5">
-      <p className="text-xs uppercase tracking-wide text-slate-500">策略盈亏模拟</p>
-      <h2 className="mt-2 text-xl font-semibold">收益趋势与锁定利润</h2>
+      <p className="text-xs uppercase tracking-wide text-slate-500">Strategy P&L Simulation</p>
+      <h2 className="mt-2 text-xl font-semibold">Yield Trend & Locked Profit</h2>
       <p className="mt-2 text-sm text-slate-400">
-        每日盈亏按 Vault 净值 -10% 到 +10% 模拟，图表保留最近 30 天，不再卡在 D15。
+        Daily P&L simulated at -10% to +10% of Vault NAV. Chart retains last 30 days.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">日收益</p>
+          <p className="text-xs text-slate-500">Daily P&L</p>
           <p className={`mt-1 font-semibold ${pnlClass(dailyPnl)}`}>
             {dailyPnl >= 0 ? "+" : ""}{dailyPnl.toFixed(2)} USDC
           </p>
         </div>
         <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">周收益</p>
+          <p className="text-xs text-slate-500">Weekly P&L</p>
           <p className={`mt-1 font-semibold ${pnlClass(weeklyPnl)}`}>
             {weeklyPnl >= 0 ? "+" : ""}{weeklyPnl.toFixed(2)} USDC
           </p>
         </div>
         <div className="rounded-md bg-black/20 p-3">
-          <p className="text-xs text-slate-500">月收益</p>
+          <p className="text-xs text-slate-500">Monthly P&L</p>
           <p className={`mt-1 font-semibold ${pnlClass(monthlyPnl)}`}>
             {monthlyPnl >= 0 ? "+" : ""}{monthlyPnl.toFixed(2)} USDC
           </p>
@@ -68,9 +68,9 @@ export default function YieldChart({ loan }: { loan: Loan | null }) {
             <YAxis stroke="#94a3b8" />
             <Tooltip contentStyle={{ background: "#111721", border: "1px solid #273244", borderRadius: 8 }} labelStyle={{ color: "#e2e8f0" }} />
             <ReferenceLine y={0} stroke="#64748b" strokeDasharray="4 4" />
-            <Area type="monotone" dataKey="pnl" name="当日盈亏" stroke="#f2c35f" fill="transparent" strokeWidth={2} />
-            <Area type="monotone" dataKey="yield" name="累计策略盈亏" stroke="#28d7c4" fill="url(#yieldFill)" strokeWidth={2} />
-            <Area type="monotone" dataKey="repaid" name="贷方利润锁定池" stroke="#a6e86f" fill="transparent" strokeWidth={2} />
+            <Area type="monotone" dataKey="pnl" name="Daily P&L" stroke="#f2c35f" fill="transparent" strokeWidth={2} />
+            <Area type="monotone" dataKey="yield" name="Cumulative P&L" stroke="#28d7c4" fill="url(#yieldFill)" strokeWidth={2} />
+            <Area type="monotone" dataKey="repaid" name="Lender Profit Lock" stroke="#a6e86f" fill="transparent" strokeWidth={2} />
           </AreaChart>
         </ResponsiveContainer>
       </div>

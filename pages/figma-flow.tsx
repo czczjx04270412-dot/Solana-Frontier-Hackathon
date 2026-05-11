@@ -1,43 +1,43 @@
 const steps = [
   {
-    title: "1. 借方申请融资",
-    body: "借方连接钱包，提交借款金额和抵押资产。系统根据抵押率、收益能力、策略风险和市场波动生成风险评分。"
+    title: "1. Borrower Applies for Financing",
+    body: "Borrower connects wallet and submits loan amount and collateral. System generates risk score based on collateral ratio, yield ability, strategy risk, and market volatility."
   },
   {
-    title: "2. AI / ZK 风控评估",
-    body: "贷方可看到风险等级、推荐目标收益和可解释 AI 风险说明；后台风控可查看更完整的隐私风控因子。"
+    title: "2. AI / ZK Risk Assessment",
+    body: "Lender can see risk level, recommended target yield, and explainable AI risk summary. Admin risk control can view more complete private risk factors."
   },
   {
-    title: "3. 贷方放款",
-    body: "贷方确认风险和目标收益后放款，贷方本金与借方抵押共同进入受控 Vault。"
+    title: "3. Lender Funds",
+    body: "After lender confirms risk and target yield, funds are sent. Lender principal and borrower collateral jointly enter the controlled Vault."
   },
   {
-    title: "4. Vault 受控交易",
-    body: "借方不能直接提走资金，只能通过平台的受控交易面板执行白名单策略，例如买入或卖出 SOL。"
+    title: "4. Vault Controlled Trading",
+    body: "Borrower cannot withdraw funds directly, only execute whitelisted strategies (e.g. buy/sell SOL) via the platform's controlled trading panel."
   },
   {
-    title: "5. 实时净值监控",
-    body: "系统持续计算 Vault 实时净值、清算线、距离清算线、日收益、周收益和月收益。"
+    title: "5. Real-time NAV Monitoring",
+    body: "System continuously calculates Vault real-time NAV, liquidation line, distance to liquidation, daily/weekly/monthly yield."
   },
   {
-    title: "6. 盈利分配",
-    body: "每日盈利按 5% / 95% 分账：5% 进入贷方利润锁定池，95% 留在策略复投池继续交易。"
+    title: "6. Profit Distribution",
+    body: "Daily profit split 5% / 95%: 5% enters lender profit lock pool, 95% stays in strategy reinvest pool for continued trading."
   },
   {
-    title: "7. 亏损瀑布",
-    body: "亏损先扣策略复投池，再扣借方抵押；贷方利润锁定池和贷方本金保护线不参与交易亏损。"
+    title: "7. Loss Waterfall",
+    body: "Loss deducted from strategy reinvest pool first, then borrower collateral. Lender profit lock pool and lender principal protection are never deducted."
   },
   {
-    title: "8. 协议退出",
-    body: "当贷方利润锁定池达到目标利润，且 Vault 净值足够覆盖贷方本金与锁定利润时，协议可结算退出。"
+    title: "8. Protocol Exit",
+    body: "When the lender profit lock pool reaches target profit and Vault NAV is sufficient to cover lender principal + locked profit, the protocol can settle and exit."
   }
 ];
 
 const roles = [
-  ["借方", "申请融资、执行受控策略、承担主要交易亏损、获得剩余收益"],
-  ["贷方", "提供本金、查看风险与收益、获得锁定利润和本金保护"],
-  ["Vault", "托管本金与抵押、限制交易权限、记录收益池和清算状态"],
-  ["后台风控", "查看完整风险因子、监控异常、辅助策略和清算判断"]
+  ["Borrower", "Applies for financing, executes controlled strategies, bears main trading losses, receives remaining yield"],
+  ["Lender", "Provides principal, views risk and yield, receives locked profit and principal protection"],
+  ["Vault", "Custodies principal and collateral, restricts trading permissions, records profit pools and liquidation status"],
+  ["Admin Risk Control", "Views full risk factors, monitors anomalies, assists strategy and liquidation decisions"]
 ];
 
 export default function FigmaFlowPage() {
@@ -47,16 +47,16 @@ export default function FigmaFlowPage() {
         <div className="flex items-start justify-between gap-8">
           <div>
             <p className="text-sm uppercase tracking-[0.22em] text-[#28d7c4]">Solana DeFi Credit Vault</p>
-            <h1 className="mt-4 text-5xl font-semibold">项目业务流程图</h1>
+            <h1 className="mt-4 text-5xl font-semibold">Project Business Flow</h1>
             <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-400">
-              基于 Solana 的受控融资协议：资金进入 Vault，借方只能执行白名单策略；
-              系统实时监控净值和清算线，并通过贷方利润锁定池和策略复投池完成收益记账。
+              Solana-based controlled financing protocol: funds enter Vault, borrower can only execute whitelisted strategies.
+              System monitors NAV and liquidation line in real-time, recording yield via lender profit lock pool and strategy reinvest pool.
             </p>
           </div>
           <div className="rounded-lg border border-[#273244] bg-[#111721] p-5 text-right">
-            <p className="text-sm text-slate-500">核心机制</p>
+            <p className="text-sm text-slate-500">Core Mechanism</p>
             <p className="mt-2 text-2xl font-semibold text-[#28d7c4]">5% / 95%</p>
-            <p className="mt-1 text-sm text-slate-400">贷方利润锁定 / 策略复投</p>
+            <p className="mt-1 text-sm text-slate-400">Lender Profit Lock / Strategy Reinvest</p>
           </div>
         </div>
 
@@ -89,23 +89,23 @@ export default function FigmaFlowPage() {
         <div className="mt-10 grid grid-cols-3 gap-5">
           <div className="rounded-lg border border-[#273244] bg-[#111721] p-5">
             <p className="text-sm uppercase tracking-wide text-slate-500">Profit</p>
-            <h3 className="mt-2 text-2xl font-semibold">盈利结算</h3>
+            <h3 className="mt-2 text-2xl font-semibold">Profit Settlement</h3>
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              每日盈利按 5% 进入贷方利润锁定池，95% 留在策略复投池。收益不直接进入个人钱包。
+              Daily profit: 5% enters lender profit lock pool, 95% stays in strategy reinvest pool. Yield does not go directly to personal wallets.
             </p>
           </div>
           <div className="rounded-lg border border-[#273244] bg-[#111721] p-5">
             <p className="text-sm uppercase tracking-wide text-slate-500">Loss</p>
-            <h3 className="mt-2 text-2xl font-semibold">亏损瀑布</h3>
+            <h3 className="mt-2 text-2xl font-semibold">Loss Waterfall</h3>
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              亏损优先扣策略复投池，复投池不足时再扣借方抵押，贷方本金和已锁定利润优先保护。
+              Loss deducted from strategy reinvest pool first; when insufficient, borrower collateral is deducted. Lender principal and locked profit are always protected.
             </p>
           </div>
           <div className="rounded-lg border border-[#273244] bg-[#111721] p-5">
             <p className="text-sm uppercase tracking-wide text-slate-500">Exit</p>
-            <h3 className="mt-2 text-2xl font-semibold">退出条件</h3>
+            <h3 className="mt-2 text-2xl font-semibold">Exit Conditions</h3>
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              贷方利润锁定池达到目标利润，且 Vault 净值足够覆盖贷方本金和锁定利润，协议可结算退出。
+              When lender profit lock pool reaches target profit and Vault NAV covers lender principal + locked profit, the protocol can settle and exit.
             </p>
           </div>
         </div>

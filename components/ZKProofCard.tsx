@@ -11,11 +11,11 @@ type ProofState = {
 };
 
 const privacyItems = [
-  { label: "资产来源已验证", note: "证明抵押资产来源符合要求，但不暴露完整钱包历史。" },
-  { label: "无严重违约记录", note: "证明历史违约检查通过，但不公开每一笔历史借贷记录。" },
-  { label: "收益能力达到阈值", note: "收益能力和现金流数据保持隐私，只公开验证结果。" },
-  { label: "策略暴露在限制内", note: "不暴露具体仓位，只证明策略风险没有超过协议限制。" },
-  { label: "市场波动模型通过", note: "市场模型参数仅后台可见，贷方只看到验证通过。" }
+  { label: "Asset Source Verified", note: "Proves collateral asset source meets requirements without exposing full wallet history." },
+  { label: "No Severe Default Record", note: "Proves historical default check passed without disclosing every past loan record." },
+  { label: "Yield Ability Meets Threshold", note: "Yield ability and cash flow data remain private, only verification result is public." },
+  { label: "Strategy Exposure Within Limits", note: "Does not expose specific positions, only proves strategy risk has not exceeded protocol limits." },
+  { label: "Market Volatility Model Passed", note: "Market model parameters are admin-only visible, lender only sees verification passed." }
 ];
 
 export default function ZKProofCard({ collateralRatio, creditScore }: { collateralRatio?: number; creditScore?: number }) {
@@ -71,19 +71,19 @@ export default function ZKProofCard({ collateralRatio, creditScore }: { collater
     <section className="rounded-lg border border-line bg-panel p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">ZK 风控证明 (Groth16)</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">ZK Risk Proof (Groth16)</p>
           <h2 className="mt-2 text-xl font-semibold">
-            {state.loading ? "生成证明中..." : state.verified ? "隐私因子已验证" : "验证失败"}
+            {state.loading ? "Generating proof..." : state.verified ? "Private Factors Verified" : "Verification Failed"}
           </h2>
         </div>
         <span className={`rounded-md px-3 py-2 text-sm ${state.verified ? "bg-aqua/10 text-aqua" : "bg-danger/10 text-danger"}`}>
-          {state.loading ? "处理中" : state.verified ? "ZK Verified" : "Failed"}
+          {state.loading ? "Processing" : state.verified ? "ZK Verified" : "Failed"}
         </span>
       </div>
 
       <p className="mt-4 rounded-md border border-line bg-black/20 p-3 text-sm leading-6 text-slate-300">
-        ZK 证明：抵押率 ≥ {state.publicSignals[0] ?? "120"}% 且信用分 ≥ {state.publicSignals[1] ?? "40"}，
-        但不暴露具体的抵押率数值和信用分。贷方只能看到验证结果。
+        ZK Proof: Collateral ratio ≥ {state.publicSignals[0] ?? "120"}% AND credit score ≥ {state.publicSignals[1] ?? "40"},
+        without revealing exact collateral ratio or credit score values. Lender can only see the verification result.
       </p>
 
       {state.proofHash && (
@@ -118,12 +118,12 @@ export default function ZKProofCard({ collateralRatio, creditScore }: { collater
       )}
 
       <div className="mt-5 space-y-3">
-        <p className="text-xs text-slate-500 uppercase tracking-wide">隐私保护项</p>
+        <p className="text-xs text-slate-500 uppercase tracking-wide">Privacy Protected Items</p>
         {privacyItems.map((item) => (
           <div key={item.label} className="rounded-md bg-black/20 px-3 py-3">
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm font-medium text-slate-200">{item.label}</span>
-              <span className="text-lime">已验证</span>
+              <span className="text-lime">Verified</span>
             </div>
             <p className="mt-2 text-sm text-slate-500">{item.note}</p>
           </div>
@@ -135,7 +135,7 @@ export default function ZKProofCard({ collateralRatio, creditScore }: { collater
         disabled={state.loading}
         className="mt-5 w-full rounded-md border border-aqua/40 px-4 py-2.5 text-sm font-semibold text-aqua transition hover:bg-aqua/10 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {state.loading ? "生成中..." : "重新生成 ZK Proof"}
+        {state.loading ? "Generating..." : "Regenerate ZK Proof"}
       </button>
     </section>
   );

@@ -35,28 +35,28 @@ export function calculateRisk(amount: number, collateral: number): RiskResult {
     approved,
     factors: {
       collateralRatio: {
-        label: "抵押率",
+        label: "Collateral Ratio",
         score: collateralBand.score,
         weight: 40,
         explanation: collateralBand.explanation,
         private: false
       },
       yieldAbility: {
-        label: "收益能力",
+        label: "Yield Ability",
         score: yieldAbilityScore,
         weight: 30,
         explanation: getYieldExplanation(yieldAbilityScore),
         private: true
       },
       strategyRisk: {
-        label: "策略风险",
+        label: "Strategy Risk",
         score: strategyRiskScore,
         weight: 20,
         explanation: getStrategyExplanation(strategyRiskScore),
         private: true
       },
       marketVolatility: {
-        label: "市场波动",
+        label: "Market Volatility",
         score: marketVolatilityScore,
         weight: 10,
         explanation: getMarketExplanation(marketVolatilityScore),
@@ -69,11 +69,11 @@ export function calculateRisk(amount: number, collateral: number): RiskResult {
 }
 
 function getCollateralBand(ratio: number): RiskBand {
-  if (ratio >= 180) return { level: "very-low", score: 95, label: "低风险", explanation: "抵押率达到 180% 以上，安全垫充足。" };
-  if (ratio >= 150) return { level: "medium", score: 72, label: "中风险", explanation: "抵押率位于 150%-180%，策略风险中等。" };
-  if (ratio >= 130) return { level: "high", score: 48, label: "高风险", explanation: "抵押率位于 130%-150%，需要更高目标收益补偿风险。" };
-  if (ratio >= 120) return { level: "high", score: 35, label: "高风险", explanation: "抵押率接近清算线，借方抵押承担主要亏损风险。" };
-  return { level: "liquidation", score: 10, label: "清算区", explanation: "抵押率低于 120%，策略应停止。" };
+  if (ratio >= 180) return { level: "very-low", score: 95, label: "Low Risk", explanation: "Collateral ratio above 180%, strong safety buffer." };
+  if (ratio >= 150) return { level: "medium", score: 72, label: "Medium Risk", explanation: "Collateral ratio at 150%-180%, moderate strategy risk." };
+  if (ratio >= 130) return { level: "high", score: 48, label: "High Risk", explanation: "Collateral ratio at 130%-150%, higher target yield needed to compensate risk." };
+  if (ratio >= 120) return { level: "high", score: 35, label: "High Risk", explanation: "Collateral ratio near liquidation line, borrower collateral bears primary loss risk." };
+  return { level: "liquidation", score: 10, label: "Liquidation Zone", explanation: "Collateral ratio below 120%, strategy should stop." };
 }
 
 function getYieldAbilityScore(amount: number, ratio: number) {
@@ -109,9 +109,9 @@ function getDefaultProbability(level: RiskLevel) {
 }
 
 export function getLenderApr(level: RiskLevel) {
-  if (level === "very-low" || level === "low") return "8% - 12% 目标收益";
-  if (level === "medium") return "12% - 20% 目标收益";
-  return "20% - 35% 目标收益";
+  if (level === "very-low" || level === "low") return "8% - 12% Target Yield";
+  if (level === "medium") return "12% - 20% Target Yield";
+  return "20% - 35% Target Yield";
 }
 
 export function getLenderAprRate(level: RiskLevel) {
@@ -121,31 +121,31 @@ export function getLenderAprRate(level: RiskLevel) {
 }
 
 function getYieldExplanation(score: number) {
-  if (score >= 80) return "收益能力较强，可以更快累积贷方利润锁定池。";
-  if (score >= 60) return "收益能力中等，需要持续观察策略表现。";
-  return "收益能力偏弱，更依赖抵押安全垫。";
+  if (score >= 80) return "Strong yield ability, can accumulate lender profit pool faster.";
+  if (score >= 60) return "Moderate yield ability, continuous monitoring of strategy performance needed.";
+  return "Weak yield ability, more dependent on collateral safety buffer.";
 }
 
 function getStrategyExplanation(score: number) {
-  if (score >= 80) return "策略较稳定，适合低风险融资。";
-  if (score >= 60) return "策略风险中等。";
-  return "策略波动较高，需要严格资金库控制。";
+  if (score >= 80) return "Strategy is stable, suitable for low-risk financing.";
+  if (score >= 60) return "Moderate strategy risk.";
+  return "High strategy volatility, strict vault controls required.";
 }
 
 function getMarketExplanation(score: number) {
-  if (score >= 80) return "市场波动较小。";
-  if (score >= 60) return "市场波动正常。";
-  return "市场波动可能快速压缩抵押安全垫。";
+  if (score >= 80) return "Low market volatility.";
+  if (score >= 60) return "Normal market volatility.";
+  return "Market volatility may rapidly compress collateral safety buffer.";
 }
 
 function buildAiReason(ratio: number, label: string, yieldScore: number, strategyScore: number, marketScore: number, approved: boolean) {
-  const decision = approved ? "该申请可以进入放款列表。" : "该申请不应继续。";
-  return `AI 风控评估：${label}。抵押率为 ${ratio}%，收益能力 ${yieldScore}/100，策略安全性 ${strategyScore}/100，市场稳定性 ${marketScore}/100。${decision}`;
+  const decision = approved ? "This application can proceed to the lending list." : "This application should not proceed.";
+  return `AI Risk Assessment: ${label}. Collateral ratio is ${ratio}%, yield ability ${yieldScore}/100, strategy safety ${strategyScore}/100, market stability ${marketScore}/100. ${decision}`;
 }
 
 function buildLenderReason(ratio: number, label: string, yieldScore: number, strategyScore: number, approved: boolean) {
-  const decision = approved ? "该贷款可以按风险等级设置目标收益。" : "该贷款不建议放款。";
-  return `AI 风控评估：${label}。公开抵押率为 ${ratio}%，贷方可据此定价。ZK 用于证明收益能力（${yieldScore}/100）、策略暴露（${strategyScore}/100）、违约历史和资产来源检查通过。${decision}`;
+  const decision = approved ? "This loan can set target yield based on risk level." : "This loan is not recommended for funding.";
+  return `AI Risk Assessment: ${label}. Public collateral ratio is ${ratio}%, lender can price accordingly. ZK proof verifies yield ability (${yieldScore}/100), strategy exposure (${strategyScore}/100), default history and asset source checks passed. ${decision}`;
 }
 
 export function buildLoan(amount: number, collateral: number, borrower: string): Loan {

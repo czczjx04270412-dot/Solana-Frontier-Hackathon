@@ -34,69 +34,69 @@ export default function ProfitLedgerBoard({ loan }: { loan: Loan | null }) {
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <p className="text-xs uppercase tracking-wide text-slate-500">PROFIT LEDGER</p>
-          <h2 className="mt-2 text-3xl font-semibold">双方收益数据看板</h2>
+          <h2 className="mt-2 text-3xl font-semibold">Profit Ledger Dashboard</h2>
           <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-400">
-            这里展示最终权益归属，不展示交易细节。所有收益仍留在 Vault 内部记账：
-            贷方利润锁定池不能再参与交易，策略复投池继续由借方使用。
+            Shows final profit allocation, not trading details. All earnings stay inside the Vault:
+            Lender profit lock pool cannot be traded; strategy reinvest pool continues to be used by borrower.
           </p>
         </div>
         <div className={exitReady ? "rounded-md bg-lime/10 px-5 py-3 text-lg font-semibold text-lime" : "rounded-md bg-aqua/10 px-5 py-3 text-lg font-semibold text-aqua"}>
-          {exitReady ? "退出条件已满足" : "协议运行中"}
+          {exitReady ? "Exit Conditions Met" : "Protocol Running"}
         </div>
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <div className="rounded-lg border border-line bg-ink p-5">
-          <p className="text-sm text-slate-500">贷方视角</p>
+          <p className="text-sm text-slate-500">Lender View</p>
           <div className="mt-5 space-y-4">
             <div>
-              <p className="text-sm text-slate-400">本金保护线</p>
+              <p className="text-sm text-slate-400">Principal Protection</p>
               <p className="mt-1 text-3xl font-semibold text-amber">{money(principal)}</p>
             </div>
             <div>
-              <p className="text-sm text-slate-400">利润锁定池</p>
+              <p className="text-sm text-slate-400">Profit Lock Pool</p>
               <p className="mt-1 text-3xl font-semibold text-lime">{money(lockedProfit)}</p>
             </div>
             <div>
-              <p className="text-sm text-slate-400">退出时可拿走</p>
+              <p className="text-sm text-slate-400">Lender Exit Amount</p>
               <p className="mt-1 text-2xl font-semibold">{money(lenderExitAmount)}</p>
             </div>
           </div>
         </div>
 
         <div className="rounded-lg border border-line bg-ink p-5">
-          <p className="text-sm text-slate-500">借方视角</p>
+          <p className="text-sm text-slate-500">Borrower View</p>
           <div className="mt-5 space-y-4">
             <div>
-              <p className="text-sm text-slate-400">策略复投池</p>
+              <p className="text-sm text-slate-400">Strategy Reinvest Pool</p>
               <p className="mt-1 text-3xl font-semibold text-aqua">{money(strategyPool)}</p>
             </div>
             <div>
-              <p className="text-sm text-slate-400">当前抵押余额</p>
+              <p className="text-sm text-slate-400">Current Collateral Balance</p>
               <p className="mt-1 text-3xl font-semibold text-lime">{money(collateral)}</p>
             </div>
             <div>
-              <p className="text-sm text-slate-400">抵押已承担亏损</p>
+              <p className="text-sm text-slate-400">Collateral Loss Absorbed</p>
               <p className="mt-1 text-2xl font-semibold text-danger">{money(collateralLoss)}</p>
             </div>
           </div>
         </div>
 
         <div className="rounded-lg border border-line bg-ink p-5">
-          <p className="text-sm text-slate-500">Vault 结算视角</p>
+          <p className="text-sm text-slate-500">Vault Settlement View</p>
           <div className="mt-5 space-y-4">
             <div>
-              <p className="text-sm text-slate-400">Vault 实时净值</p>
+              <p className="text-sm text-slate-400">Vault Real-time NAV</p>
               <p className="mt-1 text-3xl font-semibold text-aqua">{money(vaultNav)}</p>
             </div>
             <div>
-              <p className="text-sm text-slate-400">累计策略盈亏</p>
+              <p className="text-sm text-slate-400">Cumulative Strategy P&L</p>
               <p className={`mt-1 text-3xl font-semibold ${tone(totalPnl)}`}>
                 {totalPnl >= 0 ? "+" : ""}{money(totalPnl)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-slate-400">最新 1 天盈亏</p>
+              <p className="text-sm text-slate-400">Latest Daily P&L</p>
               <p className={`mt-1 text-2xl font-semibold ${tone(latestPnl)}`}>
                 {latestPnl >= 0 ? "+" : ""}{money(latestPnl)}
               </p>
@@ -107,19 +107,19 @@ export default function ProfitLedgerBoard({ loan }: { loan: Loan | null }) {
 
       <div className="mt-5 grid gap-4 md:grid-cols-3">
         <div className="rounded-lg bg-black/20 p-4">
-          <p className="text-sm text-slate-500">日收益</p>
+          <p className="text-sm text-slate-500">Daily P&L</p>
           <p className={`mt-2 text-2xl font-semibold ${tone(latestPnl)}`}>
             {latestPnl >= 0 ? "+" : ""}{money(latestPnl)}
           </p>
         </div>
         <div className="rounded-lg bg-black/20 p-4">
-          <p className="text-sm text-slate-500">周收益</p>
+          <p className="text-sm text-slate-500">Weekly P&L</p>
           <p className={`mt-2 text-2xl font-semibold ${tone(weeklyPnl)}`}>
             {weeklyPnl >= 0 ? "+" : ""}{money(weeklyPnl)}
           </p>
         </div>
         <div className="rounded-lg bg-black/20 p-4">
-          <p className="text-sm text-slate-500">月收益</p>
+          <p className="text-sm text-slate-500">Monthly P&L</p>
           <p className={`mt-2 text-2xl font-semibold ${tone(monthlyPnl)}`}>
             {monthlyPnl >= 0 ? "+" : ""}{money(monthlyPnl)}
           </p>
@@ -129,20 +129,20 @@ export default function ProfitLedgerBoard({ loan }: { loan: Loan | null }) {
       <div className="mt-5 rounded-lg border border-line bg-black/20 p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm text-slate-400">贷方目标利润进度</p>
+            <p className="text-sm text-slate-400">Lender Target Profit Progress</p>
             <p className="mt-1 text-xl font-semibold">
               {money(lockedProfit)} / {money(targetProfit)}
             </p>
           </div>
           <div className="text-sm text-slate-400">
-            剩余目标利润：<span className="font-semibold text-slate-100">{money(remainingTarget)}</span>
+            Remaining target: <span className="font-semibold text-slate-100">{money(remainingTarget)}</span>
           </div>
         </div>
         <div className="mt-4 h-4 overflow-hidden rounded-full bg-black/40">
           <div className="h-full rounded-full bg-aqua transition-all" style={{ width: `${progress}%` }} />
         </div>
         <p className="mt-3 text-sm leading-6 text-slate-400">
-          退出条件：贷方利润锁定池达到目标利润，并且 Vault 净值足够覆盖贷方本金 + 已锁定利润。
+          Exit condition: Lender profit lock pool reaches target profit, and Vault NAV is sufficient to cover lender principal + locked profit.
         </p>
       </div>
     </section>

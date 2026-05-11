@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Solana DeFi Credit Vault — Presentation</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0d12;
+    --panel: #111721;
+    --line: #273244;
+    --aqua: #28d7c4;
+    --lime: #a6e86f;
+    --amber: #f2c35f;
+    --danger: #f26b6b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --dim: #475569;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(11,13,18,0.95);
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; height: 56px;
+    backdrop-filter: blur(12px);
+  }
+  nav .brand { font-size: 1rem; font-weight: 700; color: var(--aqua); letter-spacing: .05em; }
+  nav .links { display: flex; gap: 1.5rem; }
+  nav .links a { color: var(--muted); text-decoration: none; font-size: .85rem; transition: color .2s; }
+  nav .links a:hover { color: var(--aqua); }
+  /* SLIDES */
+  .slide {
+    min-height: 100vh;
+    padding: 90px 4rem 4rem;
+    display: flex; flex-direction: column; justify-content: center;
+    border-bottom: 1px solid var(--line);
+    max-width: 1200px; margin: 0 auto;
+  }
+  .slide-full {
+    min-height: 100vh;
+    padding: 90px 4rem 4rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .tag {
+    display: inline-block;
+    font-size: .75rem; font-weight: 600; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--aqua); margin-bottom: .75rem;
+  }
+  h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 700; line-height: 1.1; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 700; margin-bottom: .5rem; }
+  h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: .4rem; color: var(--text); }
+  .lead { font-size: 1.1rem; color: var(--muted); max-width: 760px; margin-top: 1rem; line-height: 1.8; }
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-top: 2rem; }
+  @media (max-width: 900px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+  /* CARD */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .card-accent-aqua { border-color: rgba(40,215,196,.35); }
+  .card-accent-lime  { border-color: rgba(166,232,111,.35); }
+  .card-accent-amber { border-color: rgba(242,195,95,.35); }
+  .card-accent-danger{ border-color: rgba(242,107,107,.35); }
+  /* BADGE */
+  .badge {
+    display: inline-block; padding: .25rem .75rem; border-radius: 6px;
+    font-size: .8rem; font-weight: 600;
+  }
+  .badge-aqua  { background: rgba(40,215,196,.12); color: var(--aqua); }
+  .badge-lime  { background: rgba(166,232,111,.12); color: var(--lime); }
+  .badge-amber { background: rgba(242,195,95,.12);  color: var(--amber); }
+  .badge-danger{ background: rgba(242,107,107,.12); color: var(--danger); }
+  /* PILL */
+  .pill { display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .9rem; border-radius: 999px; font-size: .82rem; font-weight: 600; border: 1px solid; }
+  .pill-aqua  { border-color: rgba(40,215,196,.4);  color: var(--aqua); }
+  .pill-lime  { border-color: rgba(166,232,111,.4); color: var(--lime); }
+  .pill-amber { border-color: rgba(242,195,95,.4);  color: var(--amber); }
+  /* ICON DOT */
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot-aqua   { background: var(--aqua); }
+  .dot-lime   { background: var(--lime); }
+  .dot-amber  { background: var(--amber); }
+  .dot-danger { background: var(--danger); }
+  /* FLOW */
+  .flow { display: flex; align-items: flex-start; gap: 0; margin-top: 2rem; flex-wrap: wrap; }
+  .flow-step {
+    flex: 1; min-width: 130px;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 1.2rem 1rem; text-align: center; position: relative;
+  }
+  .flow-step .num {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--aqua); color: var(--bg);
+    font-weight: 700; font-size: .95rem;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto .75rem;
+  }
+  .flow-step .title { font-weight: 700; font-size: .9rem; margin-bottom: .3rem; }
+  .flow-step .note  { font-size: .78rem; color: var(--muted); line-height: 1.5; }
+  .flow-arrow {
+    display: flex; align-items: center; padding: 0 .4rem; color: var(--aqua);
+    font-size: 1.3rem; padding-top: 1.2rem;
+  }
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: .9rem; }
+  th { background: rgba(0,0,0,.3); padding: .75rem 1rem; text-align: left; color: var(--muted); font-weight: 600; }
+  td { padding: .7rem 1rem; border-top: 1px solid var(--line); }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  /* STAT */
+  .stat { text-align: center; }
+  .stat .value { font-size: 3rem; font-weight: 800; line-height: 1; }
+  .stat .label { font-size: .85rem; color: var(--muted); margin-top: .4rem; }
+  /* CODE */
+  .code-block {
+    background: #0d1117; border: 1px solid var(--line);
+    border-radius: 10px; padding: 1.25rem 1.5rem;
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    font-size: .82rem; line-height: 1.8; color: #c9d1d9;
+    overflow-x: auto; margin-top: 1rem;
+  }
+  .code-block .c-aqua  { color: var(--aqua); }
+  .code-block .c-lime  { color: var(--lime); }
+  .code-block .c-amber { color: var(--amber); }
+  .code-block .c-dim   { color: var(--dim); }
+  /* WATERFALL */
+  .waterfall { margin-top: 1.5rem; display: flex; flex-direction: column; gap: .75rem; }
+  .wf-row {
+    display: flex; align-items: center; gap: 1rem;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.25rem;
+  }
+  .wf-num { font-size: 1.4rem; font-weight: 800; min-width: 2rem; }
+  .wf-title { font-weight: 700; font-size: .95rem; }
+  .wf-note  { font-size: .82rem; color: var(--muted); margin-top: .15rem; }
+  /* COVER GLOW */
+  .cover-glow {
+    position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
+    width: 700px; height: 400px;
+    background: radial-gradient(ellipse at center, rgba(40,215,196,.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cover-wrap { position: relative; }
+  /* HERO STATS */
+  .hero-stats { display: flex; gap: 3rem; margin-top: 3rem; flex-wrap: wrap; }
+  .hero-stat .v { font-size: 2.5rem; font-weight: 800; color: var(--aqua); }
+  .hero-stat .l { font-size: .82rem; color: var(--muted); margin-top: .2rem; }
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--line); margin: 2rem 0; }
+  /* TECH PILL LIST */
+  .pill-list { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.2rem; }
+  /* ZK diagram */
+  .zk-flow { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .zk-box {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 1rem 1.25rem; text-align: center; min-width: 160px;
+  }
+  .zk-box .icon { font-size: 1.8rem; margin-bottom: .4rem; }
+  .zk-box .t { font-weight: 700; font-size: .9rem; }
+  .zk-box .s { font-size: .78rem; color: var(--muted); margin-top: .25rem; }
+  .zk-arrow { color: var(--aqua); font-size: 1.4rem; }
+  /* SLIDE NUMBER */
+  .slide-num { color: var(--dim); font-size: .78rem; margin-bottom: .5rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">◈ Solana DeFi Credit Vault</span>
+  <div class="links">
+    <a href="#cover">Overview</a>
+    <a href="#problem">Problem</a>
+    <a href="#solution">Solution</a>
+    <a href="#flow">Flow</a>
+    <a href="#mechanics">Mechanics</a>
+    <a href="#solana">Solana Tech</a>
+    <a href="#ai-zk">AI & ZK</a>
+    <a href="#contract">Contract</a>
+    <a href="#demo">Demo</a>
+  </div>
+</nav>
+
+<!-- ═══════════ SLIDE 1 — COVER ═══════════ -->
+<section id="cover" style="min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:90px 2rem 4rem; position:relative; overflow:hidden; border-bottom:1px solid var(--line);">
+  <div class="cover-glow"></div>
+  <div style="position:relative; z-index:1; max-width:900px;">
+    <div class="pill pill-aqua" style="margin-bottom:1.5rem;">Solana Frontier Hackathon</div>
+    <h1 style="font-size:clamp(2.8rem,7vw,5rem); font-weight:800; background: linear-gradient(135deg, #e2e8f0 30%, var(--aqua)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1.05;">
+      Solana DeFi<br>Credit Vault
+    </h1>
+    <p style="font-size:1.25rem; color:var(--muted); margin-top:1.5rem; max-width:680px; line-height:1.8;">
+      A <strong style="color:var(--text)">controlled lending protocol</strong> where lender funds never leave the protocol. 
+      Borrowers execute strategy inside a PDA-secured vault — verified by AI risk scoring and ZK privacy proofs.
+    </p>
+    <div class="hero-stats" style="justify-content:center;">
+      <div class="hero-stat"><div class="v">5% / 95%</div><div class="l">Profit Split — Lender Lock / Reinvest</div></div>
+      <div class="hero-stat"><div class="v" style="color:var(--lime)">7</div><div class="l">On-Chain Anchor Instructions</div></div>
+      <div class="hero-stat"><div class="v" style="color:var(--amber)">ZK + AI</div><div class="l">Dual Privacy & Risk Layer</div></div>
+    </div>
+    <div class="pill-list" style="justify-content:center; margin-top:2rem;">
+      <span class="pill pill-aqua">Solana</span>
+      <span class="pill pill-lime">Anchor 0.32</span>
+      <span class="pill pill-aqua">Next.js 15</span>
+      <span class="pill pill-amber">DeepSeek AI</span>
+      <span class="pill pill-lime">snarkjs ZK</span>
+      <span class="pill pill-aqua">Phantom Wallet</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 2 — PROBLEM ═══════════ -->
+<section id="problem" style="padding:90px 4rem 4rem; border-bottom:1px solid var(--line); max-width:1200px; margin:0 auto;">
+  <p class="slide-num">02 / 09</p>
+  <div class="tag">The Problem</div>
+  <h2>Traditional DeFi Lending is Broken</h2>
+  <p class="lead">Existing protocols send funds directly to borrowers — there is no way to enforce how the money is used, who bears the loss, or when the lender gets paid back.</p>
+  <div class="grid-3" style="margin-top:2rem;">
+    <div class="card card-accent-danger">
+      <div style="font-size:2rem; margin-bottom:.75rem;">🔓</div>
+      <h3>No Fund Control</h3>
+      <p style="color:var(--muted); font-size:.9rem; margin-top:.4rem;">Borrowers receive funds directly. Lenders have zero visibility into how capital is deployed or risked.</p>
+    </div>
+    <div class="card card-accent-amber">
+      <div style="font-size:2rem; margin-bottom:.75rem;">📊</div>
+      <h3>Opaque Risk</h3>
+      <p style="color:var(--muted); font-size:.9rem; margin-top:.4rem;">Credit scores are on-chain or absent entirely. Private borrower data cannot be verified without disclosure.</p>
+    </div>
+    <div class="card card-accent-danger">
+      <div style="font-size:2rem; margin-bottom:.75rem;">⚡</div>
+      <h3>Binary Liquidation</h3>
+      <p style="color:var(--muted); font-size:.9rem; margin-top:.4rem;">Losses hit lender principal immediately. There is no staged waterfall to absorb shock before principal is affected.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 3 — SOLUTION ═══════════ -->
+<section id="solution" style="padding:90px 4rem 4rem; border-bottom:1px solid var(--line); max-width:1200px; margin:0 auto;">
+  <p class="slide-num">03 / 09</p>
+  <div class="tag">Our Solution</div>
+  <h2>Controlled Vault Protocol</h2>
+  <p class="lead">Funds never leave the protocol. A PDA vault holds all capital, borrowers execute only whitelisted strategies, and profit/loss is settled trustlessly on-chain.</p>
+  <div class="grid-3" style="margin-top:2rem;">
+    <div class="card card-accent-aqua">
+      <span class="badge badge-aqua" style="margin-bottom:.75rem;">Control</span>
+      <h3>PDA-Secured Vault</h3>
+      <p style="color:var(--muted); font-size:.9rem; margin-top:.4rem;">All capital held in a Program-Derived Address token account. Neither borrower nor lender can unilaterally withdraw funds.</p>
+    </div>
+    <div class="card card-accent-lime">
+      <span class="badge badge-lime" style="margin-bottom:.75rem;">Intelligence</span>
+      <h3>AI + ZK Risk Layer</h3>
+      <p style="color:var(--muted); font-size:.9rem; margin-top:.4rem;">DeepSeek AI evaluates credit risk in plain English. snarkjs ZK proofs verify private factors without exposing raw data.</p>
+    </div>
+    <div class="card card-accent-amber">
+      <span class="badge badge-amber" style="margin-bottom:.75rem;">Protection</span>
+      <h3>Loss Waterfall</h3>
+      <p style="color:var(--muted); font-size:.9rem; margin-top:.4rem;">Losses hit strategy reinvest pool → borrower collateral → lender principal. Lender is always the last to be affected.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 4 — FLOW ═══════════ -->
+<section id="flow" style="padding:90px 4rem 4rem; border-bottom:1px solid var(--line);">
+  <div style="max-width:1200px; margin:0 auto;">
+    <p class="slide-num">04 / 09</p>
+    <div class="tag">Protocol Lifecycle</div>
+    <h2>8-Step Financing Flow</h2>
+    <div class="flow" style="gap:.5rem;">
+      <div class="flow-step"><div class="num">1</div><div class="title">Loan Application</div><div class="note">Borrower submits amount + collateral</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="num">2</div><div class="title">AI / ZK Risk</div><div class="note">Score generated, ZK proof created</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="num">3</div><div class="title">Admin Review</div><div class="note">Step 1: Loan admission</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="num">4</div><div class="title">Lender Funds</div><div class="note">Principal enters Vault</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="num">5</div><div class="title">Admin Confirms</div><div class="note">Step 2: Funding confirmation</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="num">6</div><div class="title">Strategy Trading</div><div class="note">Whitelist-only controlled trades</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="num">7</div><div class="title">Profit / Loss</div><div class="note">5/95 split or waterfall</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:rgba(40,215,196,.4)"><div class="num">8</div><div class="title">Settlement</div><div class="note">Exit when profit target met</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 5 — MECHANICS ═══════════ -->
+<section id="mechanics" style="padding:90px 4rem 4rem; border-bottom:1px solid var(--line); max-width:1200px; margin:0 auto;">
+  <p class="slide-num">05 / 09</p>
+  <div class="tag">Core Mechanics</div>
+  <h2>Profit Split & Loss Waterfall</h2>
+  <div class="grid-2">
+    <div>
+      <h3 style="color:var(--lime); margin-bottom:1rem;">🟢 Profit Day — 5% / 95% Split</h3>
+      <div class="code-block">
+<span class="c-dim">// Every profitable cycle:</span>
+<span class="c-aqua">Vault NAV gain</span> × 5%  → <span class="c-lime">Lender Profit Lock Pool</span>
+<span class="c-aqua">Vault NAV gain</span> × 95% → <span class="c-amber">Strategy Reinvest Pool</span>
+
+<span class="c-dim">// Lender profit pool is ISOLATED —</span>
+<span class="c-dim">// borrower cannot trade with it</span>
+
+<span class="c-dim">// Exit condition:</span>
+<span class="c-lime">locked_profit</span> >= <span class="c-amber">target_profit</span>
+  AND <span class="c-aqua">vault_nav</span> >= <span class="c-aqua">principal + locked</span>
+      </div>
+    </div>
+    <div>
+      <h3 style="color:var(--danger); margin-bottom:1rem;">🔴 Loss Day — Waterfall Absorption</h3>
+      <div class="waterfall">
+        <div class="wf-row" style="border-color:rgba(40,215,196,.3)">
+          <div class="wf-num" style="color:var(--aqua)">1</div>
+          <div>
+            <div class="wf-title">Strategy Reinvest Pool</div>
+            <div class="wf-note">First buffer — absorbs losses from borrower's trading activity</div>
+          </div>
+        </div>
+        <div class="wf-row" style="border-color:rgba(242,195,95,.3)">
+          <div class="wf-num" style="color:var(--amber)">2</div>
+          <div>
+            <div class="wf-title">Borrower Collateral</div>
+            <div class="wf-note">Second buffer — when reinvest pool is depleted</div>
+          </div>
+        </div>
+        <div class="wf-row" style="border-color:rgba(242,107,107,.3)">
+          <div class="wf-num" style="color:var(--danger)">3</div>
+          <div>
+            <div class="wf-title">Liquidation Trigger</div>
+            <div class="wf-note">If vault_nav &lt; 120% of loan — strategy stopped, lender protected</div>
+          </div>
+        </div>
+        <div class="wf-row" style="border-color:rgba(166,232,111,.3)">
+          <div class="wf-num" style="color:var(--lime)">✓</div>
+          <div>
+            <div class="wf-title" style="color:var(--lime)">Lender Principal — Always Last</div>
+            <div class="wf-note">Profit lock pool and principal protection are NEVER deducted from trading losses</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 6 — SOLANA TECH ═══════════ -->
+<section id="solana" style="padding:90px 4rem 4rem; border-bottom:1px solid var(--line); max-width:1200px; margin:0 auto;">
+  <p class="slide-num">06 / 09</p>
+  <div class="tag">Solana Technologies</div>
+  <h2>Built on the Full Solana Stack</h2>
+  <div class="grid-2" style="margin-top:2rem;">
+    <div class="card card-accent-aqua">
+      <span class="badge badge-aqua">On-Chain</span>
+      <h3 style="margin-top:.75rem;">Anchor Framework 0.32</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">7 typed instructions with full account validation, discriminator arrays, PDA seed derivation, and custom error codes. IDL exported for frontend type-safe client.</p>
+      <div class="divider"></div>
+      <h3>Program Derived Addresses (PDA)</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">Vault account is a PDA — deterministically derived from borrower pubkey. Neither party controls the private key. Funds are only movable via program instructions.</p>
+      <div class="divider"></div>
+      <h3>SPL Token Program</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">USDC SPL token accounts are used for all vault deposits, profit accounting, and withdrawals. Token transfers gated by on-chain state checks.</p>
+    </div>
+    <div class="card card-accent-lime">
+      <span class="badge badge-lime">Off-Chain / Frontend</span>
+      <h3 style="margin-top:.75rem;">@solana/wallet-adapter</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">Phantom wallet integration with React hooks. Wallet public key used as borrower identity, PDA seed source, and transaction signer.</p>
+      <div class="divider"></div>
+      <h3>@solana/web3.js + @coral-xyz/anchor</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">Frontend calls Anchor program methods via typed client. Server-side RPC calls use undici ProxyAgent for network compatibility.</p>
+      <div class="divider"></div>
+      <h3>Solana Devnet</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">All on-chain interactions (vault state reads, instruction submissions) target Solana Devnet. Program deployed and verifiable on-chain.</p>
+    </div>
+  </div>
+  <table style="margin-top:2rem;">
+    <thead>
+      <tr>
+        <th>Solana Primitive</th>
+        <th>How We Use It</th>
+        <th>Where</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="badge badge-aqua">PDA</span> Program Derived Address</td><td>Vault token account — trustless custody with no private key</td><td><code>lib.rs initialize_vault</code></td></tr>
+      <tr><td><span class="badge badge-lime">Anchor IDL</span></td><td>Type-safe frontend client, auto-generated discriminators</td><td><code>lib/idl/credit_vault.ts</code></td></tr>
+      <tr><td><span class="badge badge-aqua">SPL Token</span></td><td>USDC deposits, profit splits, withdrawals</td><td><code>fund_vault, simulate_yield, withdraw</code></td></tr>
+      <tr><td><span class="badge badge-amber">Wallet Adapter</span></td><td>Phantom connect/sign, identity for PDA seed</td><td><code>ConnectWalletButton, anchor-client.ts</code></td></tr>
+      <tr><td><span class="badge badge-lime">Devnet RPC</span></td><td>Account reads, transaction confirmation, vault state polling</td><td><code>pages/api/vault-state.ts</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════ SLIDE 7 — AI & ZK ═══════════ -->
+<section id="ai-zk" style="padding:90px 4rem 4rem; border-bottom:1px solid var(--line); max-width:1200px; margin:0 auto;">
+  <p class="slide-num">07 / 09</p>
+  <div class="tag">AI + ZK Dual Layer</div>
+  <h2>Smart Risk — Private by Default</h2>
+
+  <div class="grid-2" style="margin-top:2rem;">
+    <div>
+      <h3 style="color:var(--amber); margin-bottom:.75rem;">🤖 DeepSeek AI Risk Engine</h3>
+      <div class="card">
+        <p style="font-size:.88rem; color:var(--muted); line-height:1.8;">The system sends borrower risk parameters to the <strong style="color:var(--text)">DeepSeek Chat API</strong> and receives a structured JSON risk report. When the API key is unavailable, a local rule-based fallback engine runs automatically.</p>
+        <div class="code-block" style="margin-top:1rem;">
+{
+  <span class="c-aqua">"riskLevel"</span>: <span class="c-lime">"Medium"</span>,
+  <span class="c-aqua">"creditScore"</span>: <span class="c-amber">72</span>,
+  <span class="c-aqua">"collateralRatio"</span>: <span class="c-amber">184</span>,
+  <span class="c-aqua">"targetYieldMin"</span>: <span class="c-amber">0.12</span>,
+  <span class="c-aqua">"targetYieldMax"</span>: <span class="c-amber">0.20</span>,
+  <span class="c-aqua">"aiReason"</span>: <span class="c-lime">"Collateral ratio is adequate..."</span>
+}
+        </div>
+        <div class="pill-list" style="margin-top:1rem;">
+          <span class="pill pill-amber">Collateral Ratio</span>
+          <span class="pill pill-amber">Yield Ability</span>
+          <span class="pill pill-amber">Strategy Risk</span>
+          <span class="pill pill-amber">Market Exposure</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3 style="color:var(--aqua); margin-bottom:.75rem;">🔐 snarkjs ZK Privacy Proofs</h3>
+      <div class="card">
+        <p style="font-size:.88rem; color:var(--muted); line-height:1.8;">Sensitive borrower data is verified using <strong style="color:var(--text)">Groth16 zero-knowledge proofs</strong>. Only the proof hash is stored on-chain. The raw inputs never touch the blockchain.</p>
+        <div class="zk-flow" style="margin-top:1rem; gap:.75rem;">
+          <div class="zk-box"><div class="icon">🔒</div><div class="t">Private Inputs</div><div class="s">Yield history, strategy exposure, default record, asset source</div></div>
+          <div class="zk-arrow">→</div>
+          <div class="zk-box" style="border-color:rgba(40,215,196,.3)"><div class="icon">⚙️</div><div class="t">snarkjs Circuit</div><div class="s">Groth16 proof generation off-chain</div></div>
+          <div class="zk-arrow">→</div>
+          <div class="zk-box" style="border-color:rgba(166,232,111,.3)"><div class="icon">✅</div><div class="t">On-Chain Hash</div><div class="s">proof_hash stored in CreditVault PDA</div></div>
+        </div>
+        <div class="pill-list" style="margin-top:1rem;">
+          <span class="pill pill-aqua">Yield History</span>
+          <span class="pill pill-aqua">Strategy Exposure</span>
+          <span class="pill pill-aqua">Default Record</span>
+          <span class="pill pill-aqua">Asset Source</span>
+          <span class="pill pill-aqua">Market Model</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 8 — CONTRACT ═══════════ -->
+<section id="contract" style="padding:90px 4rem 4rem; border-bottom:1px solid var(--line); max-width:1200px; margin:0 auto;">
+  <p class="slide-num">08 / 09</p>
+  <div class="tag">Smart Contract</div>
+  <h2>7 Anchor Instructions — Full Lifecycle</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Instruction</th>
+        <th>Caller</th>
+        <th>What It Does</th>
+        <th>Key Accounts</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code style="color:var(--aqua)">initialize_protocol</code></td>
+        <td><span class="badge badge-danger">Admin</span></td>
+        <td>One-time setup: profit BPS, min collateral ratio, liquidation threshold, min credit score</td>
+        <td>ProtocolConfig PDA, Admin signer</td>
+      </tr>
+      <tr>
+        <td><code style="color:var(--aqua)">initialize_vault</code></td>
+        <td><span class="badge badge-amber">Borrower</span></td>
+        <td>Creates CreditVault PDA, deposits collateral, stores AI credit score + ZK proof hash</td>
+        <td>CreditVault PDA, Borrower, Collateral token account</td>
+      </tr>
+      <tr>
+        <td><code style="color:var(--aqua)">fund_vault</code></td>
+        <td><span class="badge badge-lime">Lender</span></td>
+        <td>Deposits loan principal into vault; vault status → funded</td>
+        <td>CreditVault PDA, Lender, Vault token account</td>
+      </tr>
+      <tr>
+        <td><code style="color:var(--aqua)">simulate_yield</code></td>
+        <td><span class="badge badge-aqua">Keeper</span></td>
+        <td>Applies P&L: profit splits 5%/95%, loss waterfall deducts reinvest pool then collateral</td>
+        <td>CreditVault PDA, ProtocolConfig</td>
+      </tr>
+      <tr>
+        <td><code style="color:var(--aqua)">liquidate</code></td>
+        <td><span class="badge badge-aqua">Anyone</span></td>
+        <td>Triggers when vault_nav &lt; liquidation threshold; protects lender principal</td>
+        <td>CreditVault PDA, ProtocolConfig</td>
+      </tr>
+      <tr>
+        <td><code style="color:var(--aqua)">withdraw</code></td>
+        <td><span class="badge badge-amber">Borrower</span></td>
+        <td>After repayment: borrower claims remaining collateral + reinvest pool</td>
+        <td>CreditVault PDA, Borrower, Token accounts</td>
+      </tr>
+      <tr>
+        <td><code style="color:var(--aqua)">close_vault</code></td>
+        <td><span class="badge badge-amber">Borrower</span></td>
+        <td>Closes CreditVault account and reclaims rent lamports</td>
+        <td>CreditVault PDA, Borrower</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="grid-2" style="margin-top:1.5rem;">
+    <div class="card">
+      <h3 style="color:var(--aqua);">CreditVault Account State</h3>
+      <div class="code-block" style="margin-top:.75rem;">
+<span class="c-dim">// Key fields in CreditVault PDA</span>
+borrower: <span class="c-aqua">Pubkey</span>
+lender:   <span class="c-aqua">Pubkey</span>
+amount:             <span class="c-amber">u64</span>  <span class="c-dim">// loan principal</span>
+collateral:         <span class="c-amber">u64</span>  <span class="c-dim">// borrower deposit</span>
+vault_nav:          <span class="c-amber">u64</span>  <span class="c-dim">// real-time NAV</span>
+lender_profit_share:<span class="c-amber">u64</span>  <span class="c-dim">// locked profit</span>
+strategy_pool:      <span class="c-amber">u64</span>  <span class="c-dim">// reinvest pool</span>
+credit_score:       <span class="c-amber">u8</span>   <span class="c-dim">// AI score 0-100</span>
+proof_hash:         <span class="c-lime">[u8; 32]</span> <span class="c-dim">// ZK proof hash</span>
+status:             <span class="c-aqua">VaultStatus</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--lime);">Design Principles</h3>
+      <div style="margin-top:.75rem; display:flex; flex-direction:column; gap:.75rem;">
+        <div style="display:flex; gap:.75rem; align-items:flex-start;">
+          <span class="dot dot-aqua" style="margin-top:.4rem; flex-shrink:0;"></span>
+          <div><strong>Off-chain AI + ZK, on-chain state</strong> — Risk scoring and ZK proof generation happen off-chain. Only results (score, proof hash) stored on-chain.</div>
+        </div>
+        <div style="display:flex; gap:.75rem; align-items:flex-start;">
+          <span class="dot dot-lime" style="margin-top:.4rem; flex-shrink:0;"></span>
+          <div><strong>PDA-controlled vault</strong> — Funds held in a PDA token account; neither borrower nor lender can access without program logic.</div>
+        </div>
+        <div style="display:flex; gap:.75rem; align-items:flex-start;">
+          <span class="dot dot-amber" style="margin-top:.4rem; flex-shrink:0;"></span>
+          <div><strong>Loss waterfall</strong> — Strategy pool absorbs losses first, then collateral. Lender principal protected until liquidation.</div>
+        </div>
+        <div style="display:flex; gap:.75rem; align-items:flex-start;">
+          <span class="dot dot-aqua" style="margin-top:.4rem; flex-shrink:0;"></span>
+          <div><strong>Lender profit lock</strong> — Only 5% of profit locked per round; rest compounds in strategy reinvest pool for continued yield.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 9 — DEMO ═══════════ -->
+<section id="demo" style="padding:90px 4rem 6rem; max-width:1200px; margin:0 auto;">
+  <p class="slide-num">09 / 09</p>
+  <div class="tag">Demo Walkthrough</div>
+  <h2>Six Pages, One Complete Protocol</h2>
+  <div class="grid-3" style="margin-top:2rem;">
+    <div class="card card-accent-aqua">
+      <span class="badge badge-aqua">/</span>
+      <h3 style="margin-top:.75rem;">Dashboard</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">Protocol overview: total loans, collateral, liquidation risk count, lender locked profit, and demo scenario controls.</p>
+    </div>
+    <div class="card card-accent-amber">
+      <span class="badge badge-amber">/borrow</span>
+      <h3 style="margin-top:.75rem;">Borrower View</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">Loan application form with cost breakdown, liquidation buffer, and repayment progress bar.</p>
+    </div>
+    <div class="card card-accent-lime">
+      <span class="badge badge-lime">/lend</span>
+      <h3 style="margin-top:.75rem;">Lender View</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">Browse loan applications as risk cards: AI score, ZK status, collateral ratio, and funding controls.</p>
+    </div>
+    <div class="card card-accent-aqua">
+      <span class="badge badge-aqua">/vault</span>
+      <h3 style="margin-top:.75rem;">Vault Live Ops</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">Real-time NAV, liquidation line, controlled trading panel (buy/sell SOL), yield chart, and asset whitelist.</p>
+    </div>
+    <div class="card card-accent-lime">
+      <span class="badge badge-lime">/repay</span>
+      <h3 style="margin-top:.75rem;">Settlement</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">Profit ledger, lender profit lock pool progress, exit condition check, and withdraw buttons.</p>
+    </div>
+    <div class="card card-accent-danger">
+      <span class="badge badge-danger">/risk-admin</span>
+      <h3 style="margin-top:.75rem;">Admin Panel</h3>
+      <p style="color:var(--muted); font-size:.88rem; margin-top:.4rem;">Two-step approval workflow: loan admission review → lender funding confirmation. Full risk factor visibility.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:2rem; background: linear-gradient(135deg, rgba(40,215,196,.06), rgba(166,232,111,.04)); border-color:rgba(40,215,196,.3);">
+    <div style="display:flex; align-items:center; gap:2rem; flex-wrap:wrap;">
+      <div>
+        <div class="tag" style="margin-bottom:.4rem;">Try It</div>
+        <h3 style="font-size:1.3rem;">Run the Demo Locally</h3>
+        <div class="code-block" style="margin-top:.75rem; max-width:500px;">
+git clone https://github.com/czczjx04270412-dot/Solana-Frontier-Hackathon
+npm install && npm run dev
+<span class="c-dim"># http://localhost:3000</span>
+        </div>
+      </div>
+      <div style="flex:1; min-width:240px;">
+        <div style="display:flex; flex-direction:column; gap:.6rem;">
+          <div class="wf-row" style="padding:.7rem 1rem;">
+            <span class="dot dot-aqua"></span>
+            <span style="font-size:.85rem;">Connect Phantom wallet (Devnet)</span>
+          </div>
+          <div class="wf-row" style="padding:.7rem 1rem;">
+            <span class="dot dot-lime"></span>
+            <span style="font-size:.85rem;">Apply for a loan on /borrow</span>
+          </div>
+          <div class="wf-row" style="padding:.7rem 1rem;">
+            <span class="dot dot-amber"></span>
+            <span style="font-size:.85rem;">Approve on /risk-admin</span>
+          </div>
+          <div class="wf-row" style="padding:.7rem 1rem;">
+            <span class="dot dot-aqua"></span>
+            <span style="font-size:.85rem;">Trade on /vault, watch NAV update</span>
+          </div>
+          <div class="wf-row" style="padding:.7rem 1rem;">
+            <span class="dot dot-lime"></span>
+            <span style="font-size:.85rem;">Settle and exit on /repay</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--line);">
+    <p style="color:var(--aqua); font-size:.85rem; letter-spacing:.15em; text-transform:uppercase; margin-bottom:.75rem;">Solana Frontier Hackathon</p>
+    <h1 style="font-size:clamp(2rem,5vw,3.5rem); font-weight:800; background: linear-gradient(135deg, var(--aqua), var(--lime)); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+      Solana DeFi Credit Vault
+    </h1>
+    <p style="color:var(--muted); margin-top:1rem; font-size:1rem;">PDA-Secured · AI-Assessed · ZK-Verified · On-Chain Settled</p>
+    <div class="pill-list" style="justify-content:center; margin-top:1.5rem;">
+      <span class="pill pill-aqua">Anchor 0.32</span>
+      <span class="pill pill-lime">snarkjs Groth16</span>
+      <span class="pill pill-amber">DeepSeek AI</span>
+      <span class="pill pill-aqua">SPL Token</span>
+      <span class="pill pill-lime">Phantom Wallet</span>
+      <span class="pill pill-aqua">Next.js 15</span>
+    </div>
+    <p style="margin-top:2rem; color:var(--dim); font-size:.85rem;">
+      GitHub: <a href="https://github.com/czczjx04270412-dot/Solana-Frontier-Hackathon" style="color:var(--aqua); text-decoration:none;">github.com/czczjx04270412-dot/Solana-Frontier-Hackathon</a>
+    </p>
+  </div>
+</section>
+
+</body>
+</html>

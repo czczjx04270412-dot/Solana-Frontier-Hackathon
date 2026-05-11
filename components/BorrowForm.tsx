@@ -25,14 +25,14 @@ export default function BorrowForm() {
       const nextRisk: RiskResult = await res.json();
       setRisk(nextRisk);
       if (!nextRisk.approved) {
-        setMessage("AI 风控未通过，请提高抵押金额后再试。");
+        setMessage("AI risk assessment failed. Please increase collateral amount and try again.");
         return;
       }
       createLoan(amount, collateral, publicKey?.toBase58() ?? "Demo Wallet");
-      setMessage("借款申请已创建，AI 风控评分已生成，资金将等待放款后进入 Vault。");
+      setMessage("Loan application created. AI risk score generated. Funds will enter Vault after funding approval.");
     } catch (err) {
       console.error(err);
-      setMessage("风控评分请求失败，请稍后重试。");
+      setMessage("Risk assessment request failed. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -43,19 +43,19 @@ export default function BorrowForm() {
       <section className="rounded-lg border border-line bg-panel p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">借款申请</h1>
+            <h1 className="text-2xl font-semibold">Loan Application</h1>
             <p className="mt-2 text-sm leading-6 text-slate-400">
-              借方提交金额和抵押后，系统先生成 AI/ZK 风险结果，但不会直接进入市场，必须等待后台工作人员确认。
+              After submitting amount and collateral, the system generates AI/ZK risk results. It will not enter the market directly and must be confirmed by admin.
             </p>
           </div>
           <span className="rounded-md border border-amber/40 bg-amber/10 px-3 py-2 text-sm font-semibold text-amber">
-            需后台审核
+            Admin Review Required
           </span>
         </div>
 
         <form className="mt-6 space-y-5" onSubmit={submit}>
           <label className="block">
-            <span className="text-sm text-slate-300">借款金额 USDC</span>
+            <span className="text-sm text-slate-300">Loan Amount (USDC)</span>
             <input
               value={amount}
               min={1}
@@ -65,7 +65,7 @@ export default function BorrowForm() {
             />
           </label>
           <label className="block">
-            <span className="text-sm text-slate-300">抵押金额 USDC</span>
+            <span className="text-sm text-slate-300">Collateral Amount (USDC)</span>
             <input
               value={collateral}
               min={1}
@@ -79,7 +79,7 @@ export default function BorrowForm() {
             disabled={loading}
             className="w-full rounded-md bg-aqua px-4 py-3 font-semibold text-ink transition hover:bg-aqua/90 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300"
           >
-            {loading ? "AI 风控评估中..." : "提交借款申请"}
+            {loading ? "AI Risk Assessing..." : "Submit Loan Application"}
           </button>
         </form>
         {message ? <p className="mt-4 rounded-md bg-black/20 p-3 text-sm text-slate-300">{message}</p> : null}

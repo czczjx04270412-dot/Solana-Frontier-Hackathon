@@ -11,9 +11,9 @@ export default function BorrowPage() {
   return (
     <Layout>
       <section className="mb-6">
-        <h1 className="text-2xl font-semibold">借方视角</h1>
+        <h1 className="text-2xl font-semibold">Borrower View</h1>
         <p className="mt-2 text-sm leading-6 text-slate-400">
-          借方关注融资成本、目标利润、清算缓冲和策略复投池。借方不能直接拿走 Vault 资金，只能在受控策略内交易。
+          Borrower focuses on financing cost, target profit, liquidation buffer, and strategy reinvest pool. Borrower cannot withdraw Vault funds directly, only trade within controlled strategies.
         </p>
       </section>
       <div className="space-y-6">
