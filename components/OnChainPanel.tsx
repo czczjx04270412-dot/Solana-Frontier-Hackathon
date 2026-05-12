@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AddressDisplay from "./AddressDisplay";
 
 interface VaultOnChain {
   address: string;
@@ -111,8 +112,8 @@ export default function OnChainPanel() {
           {vaults.map((v) => (
             <div key={v.address} className="rounded-md border border-line bg-black/30 p-3">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-xs text-slate-400">
-                  {v.address.slice(0, 6)}...{v.address.slice(-4)}
+                <span className="font-mono text-xs text-slate-400 max-w-[140px]">
+                  <AddressDisplay address={v.address} />
                 </span>
                 <span className={`rounded px-2 py-0.5 text-xs font-semibold ${
                   v.data.status === "strategy" ? "bg-aqua/10 text-aqua" :

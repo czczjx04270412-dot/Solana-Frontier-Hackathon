@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import type { Loan } from "@/lib/types";
 import { useLoans } from "@/lib/LoanContext";
 import LenderDecisionPanel from "./LenderDecisionPanel";
+import AddressDisplay from "./AddressDisplay";
 
 const riskClass = {
   "very-low": "text-lime",
@@ -38,7 +39,9 @@ export default function LoanCard({ loan }: { loan: Loan }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-wide text-slate-500">Borrower</p>
-          <h3 className="mt-2 font-semibold">{loan.borrower}</h3>
+          <h3 className="mt-2 font-semibold max-w-[220px]">
+            <AddressDisplay address={loan.borrower} />
+          </h3>
         </div>
         <span className={`rounded-md bg-black/25 px-3 py-2 text-sm ${riskClass[loan.risk.riskLevel]}`}>
           {loan.risk.riskLabel}

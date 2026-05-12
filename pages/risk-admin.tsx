@@ -1,4 +1,5 @@
 import CurrentLoanSummary from "@/components/CurrentLoanSummary";
+import AddressDisplay from "@/components/AddressDisplay";
 import Layout from "@/components/Layout";
 import RiskFactorPanel from "@/components/RiskFactorPanel";
 import ZKProofCard from "@/components/ZKProofCard";
@@ -27,7 +28,9 @@ function ApprovalCard({ loan }: { loan: Loan }) {
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <p className="text-xs uppercase tracking-wide text-slate-500">Risk Control Ticket</p>
-          <h3 className="mt-2 text-xl font-semibold">{loan.borrower}</h3>
+          <h3 className="mt-2 text-xl font-semibold max-w-[320px]">
+            <AddressDisplay address={loan.borrower} />
+          </h3>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
             Admin confirms whether the loan can enter the lender market and whether lender funding can enter the Vault. Funds cannot enter strategy trading until admin confirms.
           </p>
